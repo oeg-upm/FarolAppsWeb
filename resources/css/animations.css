@@ -1,0 +1,123 @@
+.animationEnter {
+	-webkit-animation: cssAnimationEnter 1s 1 linear;
+	-moz-animation: cssAnimationEnter 1s 1 linear;
+	-o-animation: cssAnimationEnter 1s 1 linear;
+}
+
+@-webkit-keyframes cssAnimationEnter {
+	from {
+		-webkit-transform: translate(-100%);
+		-moz-transform: translate(-100%);
+		-o-transform: translate(-100%);
+	}
+	to {
+	-webkit-transform: translate(0%);
+	-moz-transform: translate(0%);
+	-o-transform: translate(0%);
+	}
+}
+@-moz-keyframes cssAnimationEnter {
+	from {
+		-webkit-transform: translate(-100%);
+		-moz-transform: translate(-100%);
+		-o-transform: translate(-100%);
+	}
+	to {
+		-webkit-transform: translate(0%);
+		-moz-transform: translate(0%);
+		-o-transform: translate(0%);
+	}
+}
+@-o-keyframes cssAnimationEnter {
+	from {
+		-webkit-transform: translate(-100%);
+		-moz-transform: translate(-100%);
+		-o-transform: translate(-100%);
+	}
+	to {
+		-webkit-transform: translate(0%);
+		-moz-transform: translate(0%);
+		-o-transform: translate(0%);
+	}
+}
+
+
+.animationOut {
+	-webkit-animation: cssanimationOut 1s 1 linear;
+	-moz-animation: cssanimationOut 1s 1 linear;
+	-o-animation: cssanimationOut 1s 1 linear;
+	z-index:-1;
+}
+
+@-webkit-keyframes cssanimationOut {
+	from {
+		-webkit-transform: translate(0%);
+		-moz-transform: translate(0%);
+		-o-transform: translate(0%);
+	}
+	to {
+		-webkit-transform: translate(100%);
+		-moz-transform: translate(100%);
+		-o-transform: translate(100%);
+	}
+}
+@-moz-keyframes cssanimationOut {
+	from {
+		-webkit-transform: translate(0%);
+		-moz-transform: translate(0%);
+		-o-transform: translate(0%);
+	}
+	to {
+		-webkit-transform: translate(100%);
+		-moz-transform: translate(100%);
+		-o-transform: translate(100%);
+	}
+}
+@-o-keyframes cssanimationOut {
+	from {
+		-webkit-transform: translate(0%);
+		-moz-transform: translate(0%);
+		-o-transform: translate(0%);
+	}
+	to {
+		-webkit-transform: translate(100%);
+		-moz-transform: translate(100%);
+		-o-transform: translate(100%);
+	}
+}
+
+#specialForm.notDisplay{
+	-webkit-animation: formOutAnimation 1s 1 linear;
+	-moz-animation: formOutAnimation 1s 1 linear;
+	-o-animation: formOutAnimation 1s 1 linear;
+	left:100%;
+}
+#specialForm.display{
+	-webkit-animation: cssAnimationEnter 1s 1 linear;
+	-moz-animation: cssAnimationEnter 1s 1 linear;
+	-o-animation: cssAnimationEnter 1s 1 linear;
+}
+@-webkit-keyframes formOutAnimation {
+	from {
+		left:0%;
+	}
+	to {
+		left:100%;
+	}
+}
+@-moz-keyframes formOutAnimation {
+	from {
+		left:0%;
+	}
+	to {
+		left:100%;
+	}
+}
+@-o-keyframes formOutAnimation {
+	from {
+		left:0%;
+	}
+	to {
+		left:100%;
+	}
+}

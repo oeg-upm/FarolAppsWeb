@@ -1,0 +1,214 @@
+/* Dynamic Responsive Table */
+#settingsBox {
+    /*overflow-y: auto;*/
+}
+#formContainer {
+    text-align: center;
+}
+#myList {
+    width: 80%;
+    display: inline-block;
+    padding-top: 20px;
+}
+#streetViewContainer {
+    text-align: center;
+    padding-top: 20px;
+}
+#formMapContainer {
+    text-align: center;
+    padding-top: 20px;
+}
+#streetMap {
+    width: 80%;
+    height: 400px;
+    display: inline-flex;
+}
+#formMap {
+    width: 80%;
+    height: 400px;
+    display: inline-flex;
+}
+#formMap {
+    width: 80%;
+    height: 400px;
+    display: inline-flex;
+}  
+#controlsContainer {
+    text-align: center;
+    padding-bottom: 30px;
+    padding-top: 10px;
+    color: #000;
+    height: 50px;
+    font-size: 20px;
+}
+#submitButton {
+    width: 200px;
+    display: inline-flex;
+}
+.ui-page.ui-page-theme-a.ui-page-active {
+    background: #fff;
+}
+
+
+.hidden {
+    display: none;
+}
+
+a.list-group-item.active, a.list-group-item {
+	text-align: center;
+	padding-top: 0;
+	padding-bottom: 0;
+	background: rgb(70,121,189);
+}
+
+a {
+    text-decoration: none !important;
+}
+
+.list-group-item-heading {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 15px;
+	color: #FFF !important;
+	text-decoration: none !important;
+	text-shadow: 2px 2px #1F026D;
+	text-align: center;
+}
+
+a.list-group-item:focus {
+	background: rgb(70,121,189) !important;
+	color: #555 !important;
+}
+
+a.list-group-item:hover {
+    color: #555;
+    background-color: #637C9E !important;
+}
+
+a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.active:hover {
+	z-index: 2;
+	color: #fff;
+	background-color: #637C9E;
+	border-color: #637C9E;
+}
+
+.list-group-item .rowData {
+    background: #FDFDFD;
+    border-radius: 5px;
+	overflow: hidden;
+	max-height: 0;
+	-webkit-transition: margin-bottom 1s, max-height 1s;
+	-moz-transition: margin-bottom 1s, max-height 1s;
+	-o-transition: margin-bottom 1s, max-height 1s;
+	transition: margin-bottom 1s, max-height 1s;
+}
+
+.list-group-item.active .rowData {
+	max-height: 600px;
+	margin-bottom: 15px;
+}
+
+
+.flex-container {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    -webkit-align-content: stretch;
+    -ms-flex-line-pack: stretch;
+    align-content: stretch;
+    -webkit-align-items: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+}
+
+.form_flex-item {
+    -webkit-order: 0;
+    -ms-flex-order: 0;
+    order: 0;
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-align-self: auto;
+    -ms-flex-item-align: auto;
+    align-self: auto;
+    min-width: 200px;
+    cursor: context-menu;
+    padding: 10px 0px 10px 0px;
+}
+
+.form_flex-item img {
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+}
+
+.checkIco {
+	z-index: -1;
+    color: #c0c0c0;
+    position: absolute;
+    font-size: 2em;
+    opacity: 0.5;
+}
+
+.list-group-item.active .checkIco {
+	-webkit-transition: opacity 0.7s;
+	-moz-transition: opacity 0.7s;
+	-o-transition: opacity 0.7s;
+	transition: opacity 0.7s;
+}
+
+.list-group-item .form_flex-item .checkIco {
+    z-index: -1;
+    opacity: 0;
+	-webkit-transition: opacity 1.2s;
+	-moz-transition: opacity 1.2s;
+	-o-transition: opacity 1.2s;
+	transition: opacity 1.2s;
+}
+
+.list-group-item.active .form_flex-item .checkIco {
+    z-index: 5 !important;
+    opacity: 0.5;
+}
+
+.list-group-item.active .form_flex-item.selected .checkIco {
+	color: #080;
+    opacity: 1;
+}
+
+.ui-btn.ui-input-btn.ui-corner-all.ui-shadow {
+    width: 173px;
+    display: inline-flex;
+}
+
+/* Google Street Viewer */
+
+/* Form Map */
+
+#dragableMarker {
+    width: 32px;
+    height: 32px;
+    background-size: contain;
+}
+
+#markers {
+    position: absolute;
+    top: 48px;
+    width: 32px;
+    height: 32px;
+    left: 49%;
+}
+
+#alloc {
+    height: 68px;
+}
