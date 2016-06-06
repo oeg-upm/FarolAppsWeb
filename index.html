@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang='en_UK' class="no-js">
+<html lang='es_ES' class="no-js">
 	<head>
-		<title>FarolasFujitsu</title>
+		<title>FarolApp4All</title>
 		<meta charset='UTF-8'>
 		<meta name='description' content='Web application for FarolasFujitsu'>
 		<meta id='metaLocale' name='locale' content='<%=request.getLocale()%>'>
@@ -41,7 +41,7 @@
 				<nav class='navMenu flex-item-main maxCrossAxisFlexSize mainAxisFlexCenter crossAxisFlexCenter notActivateResponsive'>
 					<div class='button'><a onclick='showLamppostMap()'>Mapa de farolas</a></div>
 					<div class='button'><a onclick='showPollutionMap()'>Mapa de contaminación lumínica</a></div>
-					<div class='button'><a onclick='alert("TODO: Write a about webapp")'>Acerca De</a></div>
+					<div class='button'><a onclick='showAboutUs()'>Acerca De</a></div>
 				</nav>
 				<div class='flex-item Logo'><img src="resources/img/OEG_Logo.png" alt="OEG Logo" class='Logo'></img></div>
 				<div class='flex-item imgMenu'><img src="resources/img/nav.png" alt="Menu IMG" class='imgMenu'></img></div>
@@ -54,7 +54,8 @@
 				<article id='specialForm' class='maxWidthAndHeightAbsolute notDisplay' style='display:none'>
 			        <div id="settingsBox">
 						<div id="formMapContainer">
-							<div id="alloc">Drag the lamppost over the map</div>
+							<div id="mapheader"> <i class="headericon fa fa-map-marker"></i>Posición<i class="headericon fa fa-map-o"></i><i id="mapttogleico" class="fa"></i></div>
+							<div id="alloc">Coloca la nueva farola sobre el mapa</div>
 							<div id="markers">
 								<div id="dragableMarker" class="drag" style="left:0; background-image: url('resources/img/optionForm/farola_ico.png')">
 								</div>
@@ -68,11 +69,13 @@
 			                <div id="myList" class="list-group"></div>
 			            </div>
 			            <div id="controlsContainer">
-			                <input id="controlsContainer" type="button" value="Update Lamppost" onclick="submitLampInfo()"/>
+			                <input id="controlsContainer" type="button" value="Actualizar farola" onclick="submitLampInfo()"/>
 			            </div>
 			        </div>
 				</article>
-				<div id='addLamppost' class='addLamppost'><img src='resources/img/add.png'></img></div>
+				<div id='addLamppost' class='addLamppost' style='display:none'><img src='resources/img/add.png'></img></div>
+				<div id='warningLamppost' class='warningLamppost' style='display:none'><img src='resources/img/warning.png'></img></div>
+				<div id='mapLoading' class='mapLoading' style='display:none'><img src='resources/img/loading.gif'></img></div>
 			</section>
 		</div>
 	</body>

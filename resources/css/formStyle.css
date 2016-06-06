@@ -14,25 +14,12 @@
     text-align: center;
     padding-top: 20px;
 }
-#formMapContainer {
-    text-align: center;
-    padding-top: 20px;
-}
 #streetMap {
     width: 80%;
     height: 400px;
     display: inline-flex;
 }
-#formMap {
-    width: 80%;
-    height: 400px;
-    display: inline-flex;
-}
-#formMap {
-    width: 80%;
-    height: 400px;
-    display: inline-flex;
-}  
+
 #controlsContainer {
     text-align: center;
     padding-bottom: 30px;
@@ -194,21 +181,70 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
 /* Google Street Viewer */
 
 /* Form Map */
-
+#formMapContainer {
+    text-align: center;
+    padding-top: 20px;
+    height: 60px;
+    -webkit-transition: height 1s;
+    -moz-transition: height 1s;
+    -o-transition: height 1s;
+    transition: height 1s;
+}
+#formMapContainer.open {
+    height: 555px;
+}
+#formMapContainer.open #formMap, #formMapContainer.open #dragableMarker, #formMapContainer.open #markers {
+    opacity: 1;
+}
+#formMap, #dragableMarker, #markers {
+    -webkit-transition: opacity 1s;
+    -moz-transition: opacity 1s;
+    -o-transition: opacity 1s;
+    transition: opacity 1s;
+}
+#formMap {
+    width: 80%;
+    height: 400px;
+    display: inline-flex;
+    opacity: 0;
+}
 #dragableMarker {
     width: 32px;
     height: 32px;
     background-size: contain;
+    opacity: 0;
 }
-
 #markers {
     position: absolute;
-    top: 48px;
+    top: 108px;
     width: 32px;
     height: 32px;
     left: 49%;
+    opacity: 0;
 }
-
 #alloc {
     height: 68px;
+}
+#mapheader {
+    height: 60px;
+    color: #282828;
+    font-size: 26px;
+    width: 80%;
+    display: inline-block;
+    text-align: center;
+}
+#mapheader .headericon {
+    font-family: FontAwesome;
+    font-size: 30px;
+    color: #282828;
+    margin: 0px 20px 0px 10px;
+}
+#mapheader #mapttogleico {
+    font-family: FontAwesome;
+    float: right;
+    top: 10px;
+    right: 15px;
+}
+#markers.hidden, #alloc.hidden {
+    display:none;
 }

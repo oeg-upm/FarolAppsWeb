@@ -3,64 +3,120 @@ var rowCounter = 0;
 var currentRowSelected;
 var currentOptionSelected = {};
 var currentLampInfo;
+var currentStreetViewData = {};
 var currentlamppostID;
 var currentlamppostZoom;
 var currentFormMarker;
 var firstLoad = true;
+var apiHost = "http://infra3.dia.fi.upm.es/api";
+var isNewLamppost;
+var panorama;
+var formCallback;
 
 
-function loadPostForm(id, lat, lng, callback) {
-    currentlamppostID = id;
-    // TODO get zoom by param
-    currentlamppostZoom = 14;
-    if(firstLoad) {
-        //initFormMap();
-        setTimeout(buildMap.bind(null, lat, lng),300);
-        setTimeout(loadStreetView.bind(null, lat, lng, 0, 0),300);
-        firstLoad = false;
-
+function loadPostForm(id, lat, lng, theZoom, callback) {
+    formCallback = callback;
+    if (id == null) {
+        // New Lampost
+        isNewLamppost = true;
+        showDraggableLamppost();
+        setTimeout(openMapContainer, 1000);
     } else {
-        updateMaps(lat, lng, currentlamppostZoom, 0, 0, true);
+        isNewLamppost = false;
+        hideDraggableLamppost();
+        setTimeout(closeMapContainer, 1000);
     }
-    
-    $.ajax
-    ({
-        type: "GET",
-        url: 'http://localhost:5555/lampposts/' + id ,
-        dataType: 'json',
-        success: function (d) {
-            console.log("success");
-            var nd = normalizeData(d);
-            updateInfo(d);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-            if (textStatus == 'timeout') {
-                this.tryCount++;
-                if (this.tryCount <= this.retryLimit) {
-                    //try again
-                    $.ajax(this);
-                    return;
-                }            
-                return;
-            }
-            if (xhr.status == 500) {
-                //handle error
-                console.log("error 500 getting " + id + " lamppost");
-            } else {
-                //handle error
-                console.log("error getting " + id + " lamppost");
-            }
+    currentlamppostID = id;
+    currentlamppostZoom = theZoom;
+    if(firstLoad) {
+        setTimeout(buildMap.bind(null, lat, lng),200);
+        setTimeout(loadStreetView.bind(null, lat, lng, 0, 0),200);
+        openEmptyForm(id, lat, lng, currentlamppostZoom);
+        if (!isNewLamppost) {
+            setTimeout(getLampInfo(),400);
         }
-    });
-    // cargando form
-    openEmptyForm(id, lat, lng, currentlamppostZoom);
-    callback();
-}
+        firstLoad = false;
+        callback();
+    } else {
+        getLampInfo();
+        updateMaps(lat, lng, currentlamppostZoom, 0, 0, true);
+        openEmptyForm(id, lat, lng, currentlamppostZoom);
+        callback();
+    }
+    function getLampInfo() {
+        $.ajax({
+            type: "GET",
+            url: apiHost + '/lampposts/' + id ,
+            dataType: 'json',
+            success: function (d) {
+                console.log("success");
+                var nd = normalizeData(d);
+                function autoWait() {
+                    if (!panorama || !formMap) {
+                        console.log("waiting for maps")
+                        setTimeout(autoWait, 200);
+                    } else {
+                        updateInfo(d);
+                    }
+                };
+                autoWait();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                if (textStatus == 'timeout') {
+                    this.tryCount++;
+                    if (this.tryCount <= this.retryLimit) {
+                        //try again
+                        $.ajax(this);
+                        return;
+                    }
+                    return;
+                }
+                if (xhr.status == 500) {
+                    //handle error
+                    console.log("API broken getting " + id + " lamppost");
+                }
+                else if (xhr.status == 404){
+                    //handle error
+                    console.log("Unknown Lamppost. " + xhr.status);
+                }
+                else {
+                    //handle error
+                    console.log("error getting " + id + " lamppost." + xhr.status);
+                }
+            }
+        });
+    };
+};
 
 function normalizeData(lampData) {
     return lampData;
 };
 
+function openMapContainer() {
+    $('#formMapContainer').addClass('open');
+    $('#mapttogleico').addClass('fa-angle-double-up');
+    $('#mapttogleico').removeClass('fa-angle-double-down');
+};
+function closeMapContainer() {
+    $('#formMapContainer').removeClass('open');
+    $('#mapttogleico').addClass('fa-angle-double-down');
+    $('#mapttogleico').removeClass('fa-angle-double-up');
+};
+function toogleMapContainer() {
+    if ($('#formMapContainer').attr('class') == "open") {
+        closeMapContainer();
+    } else {
+        openMapContainer();
+    }
+};
+function showDraggableLamppost() {
+    $('#alloc').removeClass('hidden');
+    $('#markers').removeClass('hidden');
+};
+function hideDraggableLamppost() {
+    $('#alloc').addClass('hidden');
+    $('#markers').addClass('hidden');
+};
 var formTemplate = {
     "wattage": {
         "value": null,
@@ -217,6 +273,11 @@ function openEmptyForm(id, lat, lng, zoom) {
 };
 function updateMaps(lat, lng, zoom, heading, pitch, isNew) {
     console.log("updating Maps");
+    if (currentFormMarker) {
+        currentFormMarker.setMap(null);
+        google.maps.event.clearListeners(currentFormMarker, 'drag');
+        currentFormMarker = null;
+    }
     updateStreetView(lat, lng, heading, pitch);
     updateFormMap(lat, lng, zoom, isNew);
 };
@@ -239,7 +300,13 @@ function updateFormMap(lat, lng, zoom, isNew) {
     console.log("updating Form Map");
     moveMapToLocation(formMap.map, lat, lng);
     if (!isNew) {
-        moveMarkerToLocation(currentFormMarker, lat, lng)
+        if (!currentFormMarker) {
+            var pos = new google.maps.LatLng(lat, lng);
+            createDraggedMarker(pos, "resources/img/optionForm/farola_ico.png", true); // true is for not draggable marker
+        } else {
+            moveMarkerToLocation(currentFormMarker, lat, lng);
+        }
+        
     }
 };
 function moveMapToLocation(map, lat, lng){
@@ -253,13 +320,13 @@ function moveMarkerToLocation(marker, lat, lng){
 }
 function updateInfo(data) {
     var heading, pitch;
-    updateForm(d)
+    updateForm(data)
     if (data.latitude && data.longitude) {
-        if (d.streetViewPov) {
-            if (!d.streetViewPov.heading) {
+        if (data.streetViewPov) {
+            if (!data.streetViewPov.heading) {
                 heading = 0;
             }
-            if (!d.streetViewPov.pitch) {
+            if (!data.streetViewPov.pitch) {
                 pitch = 0;
             }
         } else {
@@ -303,7 +370,7 @@ function updateForm(data) {
                     ]
                 },
                 "height": {
-                    "value": "hight",
+                    "value": "high",
                     "range": [
                         "low",
                         "medium",
@@ -360,7 +427,7 @@ function updateForm(data) {
     jQuery.each(data,function(key,value){
         console.log(key);
         console.log(value);
-        if (key == "latitude" || key == "longitude" || key == "id") {
+        if (key == "latitude" || key == "longitude" || key == "id" || key == "pollution") {
         
         } else {
             if (key == "streetViewPov") {
@@ -375,7 +442,7 @@ function updateForm(data) {
                     imageOptions[option] = optionImageMapping[key][option];
                 });
                 newRow({
-                    title: tradSpanish[key],
+                    title: key,
                     items: imageOptions,
                     selected: data[key].value
                 });
@@ -409,7 +476,7 @@ function newRow(data) {
     // Main row
     var row = document.createElement('a');
     row.innerHTML = '<a '+
-                    'href="#" class="list-group-item"><h4 class="list-group-item-heading">'+data.title+'</h4>'+
+                    'href="#" class="list-group-item"><h4 class="list-group-item-heading">'+tradSpanish[data.title]+'</h4>'+
                     '<div class="rowData flex-container"></div>'+
                     '</a>';
     container.appendChild(row);
@@ -460,7 +527,6 @@ function loadStreetView(latitude, lng, heading, pitch) {
     console.log("loading Street View");
     initStreetMap(latitude, lng, heading, pitch);
 };
-var panorama;
 
 function initStreetMap(lat, lng, heading, pitch) {
     var place = {lat: lat, lng: lng};
@@ -477,6 +543,7 @@ function initStreetMap(lat, lng, heading, pitch) {
     });
 
     // Set up the markers on the map
+    // TODO make global for clean and repaint in update street map
     var lamppostMarker = new google.maps.Marker({
         position: {lat: lat, lng: lng},
         map: map,
@@ -514,39 +581,86 @@ function initStreetMap(lat, lng, heading, pitch) {
 
 /* Control Handlers */
 function submitLampInfo() {
+    if (!currentFormMarker) {
+        console.log("No position defined for the new lamppost. drag the POI into the map");
+        if (!isNewLamppost) {
+            console.log("ERROR. Lamppost without ID???");
+        }
+        return;
+    }
     var formInfo = {
         //'timestamp': new Date
     };
     for (var key in currentLampInfo) {
         if (key == "latitude") {
-            formInfo['latitude'] = currentLampInfo[key];
+            formInfo['latitude'] = currentFormMarker.getPosition().lat();
             continue;
         }
         if (key == "longitude") {
-            formInfo['longitude'] = currentLampInfo[key];
+            formInfo['longitude'] = currentFormMarker.getPosition().lng();
             continue;
         }
         if (key == "streetViewPov") {
             formInfo[key] = currentStreetViewData;
             continue;
         }
+        if (key == "id") {
+            if (currentLampInfo[key] !== null && isNewLamppost) {
+                console.log("error new Lamppost with id???: " + currentLampInfo[key]);
+                return;
+            }
+            if (currentLampInfo[key] == null && !isNewLamppost) {
+                console.log("Lamppost without id???");
+                return;
+            }
+            continue;
+        }
         formInfo[key] = currentOptionSelected[currentLampInfo[key].paramId];
     }
     console.log(JSON.stringify(formInfo));
-    $.ajax
-    ({
-        type: "POST",
-        url: 'http://localhost:5555/lampposts/' + currentlamppostID + '/annotations',
-        dataType: 'json',
-        async: false,
-        data: JSON.stringify(formInfo),
-        success: function () {
-            console.log("success");
-        },
-        error: function () {
-            console.log("error");
-        }
-    });
+    if (isNewLamppost) {
+        regNewLamp(formInfo['latitude'], formInfo['longitude'], function(err, data) {
+            if (err) return;
+            currentlamppostID = data.id;
+            annotate(currentlamppostID, formInfo, formCallback);
+        });
+    } else {
+        annotate(currentlamppostID, formInfo, formCallback);
+    }
+    function regNewLamp(lat, lng, cbk) {
+        $.ajax
+        ({
+            type: "POST",
+            url: apiHost + '/lampposts/',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({"latitude": lat, "longitude": lng}),
+            success: function (data) {
+                console.log("success");
+                cbk(null, data);
+            },
+            error: function (e) {
+                console.log("error");
+                cbk(e)
+            }
+        });
+    };
+    function annotate(id, data, cbk) {
+        $.ajax
+        ({
+            type: "POST",
+            url: apiHost + '/lampposts/' + currentlamppostID + '/annotations',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(formInfo),
+            success: function () {
+                console.log("success");
+                cbk();
+            },
+            error: function (e) {
+                console.log("error");
+                cbk(e);
+            }
+        });
+    };
 };
 
 /* Image Mapping */
@@ -631,7 +745,14 @@ function highestOrder() {
     return z_index
 }
 
-function createDraggedMarker(d, e) {
+function createDraggedMarker(d, e, notDrag) {
+    if (currentFormMarker) {
+        return;
+    }
+    var dragVal = true;
+    if (notDrag) {
+        dragVal = false;
+    }
     var g = google.maps;
     var f = {
         url: e,
@@ -642,7 +763,7 @@ function createDraggedMarker(d, e) {
         position: d,
         map: map,
         clickable: true,
-        draggable: true,
+        draggable: dragVal,
         crossOnDrag: false,
         optimized: false,
         icon: f,
@@ -662,6 +783,11 @@ function createDraggedMarker(d, e) {
         h.setZIndex(highestOrder())
     })
     currentFormMarker = h;
+    updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), 0, 0);
+    google.maps.event.addListener(currentFormMarker,'dragend',function(event) {
+        console.log('Drag end');
+        updateStreetView(this.position.lat(), this.position.lng(), 0, 0);
+    });
 }
 
 function initDrag(e) {
@@ -705,6 +831,9 @@ function initDrag(e) {
                     var h = obj.style.backgroundImage.slice(4, -1).replace(/"/g, "");
                     createDraggedMarker(f, h);
                     fillMarker(h)
+                } else {
+                    var h = obj.style.backgroundImage.slice(4, -1).replace(/"/g, "");
+                    fillMarker(h)
                 }
             }
         }
@@ -743,6 +872,8 @@ function initDrag(e) {
 }
 
 function buildMap(lat, lng) {
+    /* Add map header event */
+    $("#mapheader").on("click", toogleMapContainer);
     function DummyOView() {
         this.setMap(map);
         this.draw = function() {}
@@ -758,12 +889,13 @@ function buildMap(lat, lng) {
     var a = {
         //center: new g.LatLng(39.475153, -6.371441),
         center: place,
-        zoom: 18,
+        zoom: currentlamppostZoom,
         streetViewControl: false,
         panControl: false,
         zoomControlOptions: {
             style: g.ZoomControlStyle.SMALL
-        }
+        },
+        mapTypeId: google.maps.MapTypeId.HYBRID
     };
     map = new g.Map(document.getElementById("formMap"), a);
     iw = new g.InfoWindow();
@@ -774,14 +906,15 @@ function buildMap(lat, lng) {
     var b = drag_area.getElementsByTagName("div");
     for (var i = 0; i < b.length; i++) {
         var c = b[i];
-        c.onmousedown = c.ontouchstart = initDrag
+        c.onmousedown = c.ontouchstart = initDrag;
     }
-    dummy = new DummyOView()
+    dummy = new DummyOView();
     formMap = dummy;
 }
 
 /* Traducción */
 var tradSpanish = {
+    "wattage": "voltaje",
     "lamp": "bombilla",
     "height": "altura",
     "light": "luz",

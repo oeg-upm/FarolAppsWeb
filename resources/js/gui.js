@@ -1,14 +1,112 @@
 
+var serverURL = 'http://infra3.dia.fi.upm.es/api/';
+
+var lastWarning = '';
+
 var isLoading=false;
 
+var drewGeometries={};
+var drewGeometriesPending={};
+var geometriesLimitOnZoomHigh=3000;
+var geometriesLimitOnZoomLow=300;
+var geometriesChangeOnZoom=19;
+var changeFillColors={
+	"red":"#D80027",
+	"orange":"#E38F22",
+	"green":"#91DC5A",
+	"blue":"#3289C7",
+	"white":"#FFFFFF",
+	"yellow":"#FFDA44",
+	"default":"#FFFFFF"
+};
+var changeStrokeColors={
+	"red":"#D80027",
+	"orange":"#E38F22",
+	"green":"#91DC5A",
+	"blue":"#3289C7",
+	"white":"#FFFFFF",
+	"yellow":"#FFDA44",
+	"default":"#FFFFFF"
+};
+var getImageColors={
+	"red":"resources/img/markers/red.png",
+	"orange":"resources/img/markers/orange.png",
+	"green":"resources/img/markers/green.png",
+	"blue":"resources/img/markers/blue.png",
+	"white":"resources/img/markers/white.png",
+	"yellow":"resources/img/markers/yellow.png",
+	"default":"resources/img/markers/white.png"
+};
+var changeWeight={
+	"high":20,
+	"medium":10,
+	"low":5
+};
+var changeRadius={
+	"high":3.5,
+	"medium":2.5,
+	"low":1.5,
+	"default":1.5
+}
+var translatePollution={
+	"high":"Alto",
+	"medium":"Medio",
+	"low":"Bajo",
+	"default":"&lt;Desconocido&gt;"
+};
+var translateLampColors={
+	"red":"Rojo",
+	"orange":"Naranja",
+	"green":"Verde",
+	"blue":"Azul",
+	"white":"Blanco",
+	"yellow":"Amarillo",
+	"default":"&lt;Desconocido&gt;"
+};
+var translateRadius={
+	"high":changeRadius["high"]+" metros",
+	"medium":changeRadius["medium"]+" metros",
+	"low":changeRadius["low"]+" metros",
+	"default":"&lt;Desconocido&gt;"
+}
+
+var heatmapLayer = null;
+
+var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
+var lamppostMap;
+var pollutionMap;
+var refreshTimeout=null;
+var refreshLoadingTimeout=null;
+var poolingTimeout=null;
+var firtsStart=true;
+var lastZoom = 15;
+
 function showLoading(){
-	//var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
-	var imageHtml = "";
-	swal({   title: "Loading", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
+	/*var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
+	//var imageHtml = "";
+	swal({   title: "Cargando", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });*/
+	jQuery('#mapLoading ').css('display','');
 }
 
 function closeLoading(){
-	swal.close();
+	/*swal.close();*/
+	jQuery('#mapLoading ').css('display','none');
+}
+
+function showAboutUs(){
+	var html = "<p>Web design/javascript by:</p><br>";
+    html += "<p style='margin-left:6px;'>Francisco Siles</p><br>";
+    html += "<p style='margin-left:6px;'>Carlos Blanco</p><br>";
+    html += "<br>";
+    html += "<p>Developed by:</p><br>";
+    html += "<p style='margin-left:6px;'>Carlos Badenes</p><br>";
+    html += "<p style='margin-left:6px;'>Fernando Serena</p><br>";
+    html += "<p style='margin-left:6px;'>Esteban Gonz&iacutelez</p><br>";
+    html += "<p style='margin-left:6px;'>Nandana</p><br>";
+    html += "<br>";
+    html += "<p>Ontology Engineering Group</p><br>";
+    html += "<p style='margin-left:6px;'>oeg-upm.net</p><br>";
+    swal({   title: "Acerca De", text:html,showConfirmButton:true, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
 }
 
 /*Funcion que registra los eventos del menu superior y del menu lateral izquierdo*/
@@ -50,19 +148,29 @@ function bindEvents(){
 			jQuery("nav").addClass("notActivateResponsive");
 		}
 	});
-	//Boton añadir farola
+	//Button añadir farola
 	jQuery("#addLamppost").bind("touchstart mousedown",function(event){
 		jQuery("#addLamppost").addClass("effect");
 	});
 	jQuery("#addLamppost").bind("touchend mouseup",function(event){
 		jQuery("#addLamppost").removeClass("effect");
-		loadPostForm(null,lamppostMap.getCenter(),lamppostMap.getZoom(),toggleFormContainer);
+		loadPostForm(null,lamppostMap.getCenter().lat(),lamppostMap.getCenter().lng(),lamppostMap.getZoom(),toggleFormContainer);
 	});
+	//Button warning
+	jQuery("#warningLamppost").bind("touchstart mousedown",function(event){
+		jQuery("#warningLamppost").addClass("effect");
+	});
+	jQuery("#warningLamppost").bind("touchend mouseup",function(event){
+		jQuery("#warningLamppost").removeClass("effect");
+		swal("Advertencia:",lastWarning,"warning");
+	});
+	//Form for lamppost
 	jQuery("#specialForm").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",function(event){
 		if(jQuery("#specialForm").hasClass('notDisplay')){
 			jQuery("#specialForm").css("display","none");
 		}
 	});
+	//Button warning and addLampost
 	jQuery("nav > div.button").bind("touchstart mousedown",function(event){
 		jQuery(this).addClass("effect");
 	});
@@ -119,13 +227,6 @@ function ajaxGet(urlString,data,funcionDone,funcionError){
 	}).done(funcionDone).error(funcionError);
 }
 
-var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
-var lamppostMap;
-var pollutionMap;
-var refreshTimeout=null;
-var refreshLoadingTimeout=null;
-var poolingTimeout=null;
-var firtsStart=true;
 function startWebPage(){
 	if(window.mobileAndTabletcheck()){
 		geometriesLimitOnZoomHigh=300;
@@ -138,9 +239,10 @@ function startWebPage(){
 		mapTypeControl: false,
 		streetViewControl: false,
 		styles: mapStyles,
-		zoom: 15
+		zoom: 17
 		//zoom:6
 	});
+	lastZoom = lamppostMap.getZoom();
 	pollutionMap = new google.maps.Map(document.getElementById('pollutionMapContainer'), {
 		center: {lat: 40.4171, lng: -3.7031},
 		mapTypeControl: false,
@@ -149,13 +251,20 @@ function startWebPage(){
 		zoom: 6
 	});
 	lamppostMap.addListener('bounds_changed', function() {
+		if(jQuery('#specialForm').hasClass('notDisplay')){
 		if(!firtsStart){
+			jQuery("#warningLamppost").css("display","none");
 			pollutionMap.setCenter(lamppostMap.getCenter());
 			var newZoom = lamppostMap.getZoom();
 			if(newZoom>=1){
 				newZoom--;
 			}
 			pollutionMap.setZoom(newZoom);
+			if(lamppostMap.getZoom()>=19){
+				jQuery('#addLamppost').css('display','')
+			}else{
+				jQuery('#addLamppost').css('display','none')
+			}
 			if(refreshTimeout){
     			window.clearTimeout(refreshTimeout);
     			refreshTimeout = null;
@@ -167,7 +276,7 @@ function startWebPage(){
 			refreshLoadingTimeout = window.setTimeout(function(){
 				showLoading();
 				isLoading=true;
-			},2900);
+			},1450);
 		    refreshTimeout = window.setTimeout(function() {
 		    	if(refreshTimeout){
 		    		window.clearTimeout(refreshTimeout);
@@ -178,13 +287,7 @@ function startWebPage(){
 		    		poolingTimeout = null;
 		    	}
 		    	getAndDrawLampposts();
-		    	window.setTimeout(function() {
-		    		if(isLoading){
-		    			closeLoading()
-		    		}
-		    		isLoading=false
-		    		},100);
-		    }, 3000);
+		    }, 1500);
 		}else{
 			pollutionMap.setCenter(lamppostMap.getCenter());
 			var newZoom = lamppostMap.getZoom();
@@ -192,37 +295,100 @@ function startWebPage(){
 				newZoom--;
 			}
 			pollutionMap.setZoom(newZoom);
+			showLoading();
+			isLoading=true;
 			getAndDrawLampposts();
 			firtsStart=false;
+		}
 		}
 	  });
 	//getAndDrawLampposts();
 }
 
-function getAndDrawLampposts(){
-	if(drewGeometries){
+function existsTheIdInArray(id,array){
+	var toReturn = false;
+	jQuery.each(array,function(i,lamppost){
+		if(lamppost['id'] == id){
+			toReturn = true;
+			return;
+		}
+	});
+	return toReturn;
+}
+
+function getSizeOfObject(object){
+	var size=0;
+	jQuery.each(object,function(key,value){
+		size++;
+	});
+	return size;
+}
+
+function removeNotVisibleGeometries(all,data){
+	if(!all && data){
+		if(drewGeometries){
+			var toRemove = [];
+			jQuery.each(drewGeometries,function(id,marker){
+				if(!existsTheIdInArray(id,data['lampposts'])){
+					marker.setMap(null);
+					toRemove.push(id);
+				}
+			});
+			var count = 0;
+			jQuery.each(toRemove,function(i,id){
+				delete drewGeometries[id];
+				count ++;
+			});
+		}
+	}else{
 		jQuery.each(drewGeometries,function(id,marker){
 			marker.setMap(null);
 		});
-		drewGeometries={};
+		drewGeometries = {};
 	}
+}
+
+function getAndDrawLampposts(){
 	var lat1=lamppostMap.getBounds().getSouthWest().lat();
 	var long1=lamppostMap.getBounds().getSouthWest().lng();
 	var lat2=lamppostMap.getBounds().getNorthEast().lat();
 	var long2=lamppostMap.getBounds().getNorthEast().lng();
-	ajaxGet("http://farolapp.linkeddata.es/api/lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
+	ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
 			function(data){
+				if(lamppostMap.getZoom()<geometriesChangeOnZoom && lastZoom<geometriesChangeOnZoom){
+					removeNotVisibleGeometries(false,data);
+				}else if(lamppostMap.getZoom()>=geometriesChangeOnZoom &&  lastZoom>=geometriesChangeOnZoom){
+					removeNotVisibleGeometries(false,data);
+				}else{
+					removeNotVisibleGeometries(true,data);
+				}
+				lastZoom = lamppostMap.getZoom();
 				drawGeometries(data['lampposts']);
 				poolingNewData(true);
+	    		if(isLoading){
+	    			closeLoading();
+	    		}
+	    		isLoading=false
 			},
 			function(error){
 				console.log("ERROR");
 				console.log(error);
+				removeNotVisibleGeometries(true);
 				drawGeometries(randomGeometries.randomGeometries(lamppostMap.getBounds()));
 				poolingNewData(true);
+	    		if(isLoading){
+	    			closeLoading();
+	    		}
+	    		isLoading=false
 			});
+	if(drewGeometriesPending){
+		jQuery.each(drewGeometriesPending,function(id,marker){
+			marker.setMap(null);
+		});
+	}
+	drewGeometriesPending = {};
 	if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
-		ajaxGet("http://farolapp.linkeddata.es/api/pendinglampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
+		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"verified":"FALSE"},
 				function(data){
 					drawGeometriesPending(data['lampposts']);
 				},
@@ -234,15 +400,14 @@ function getAndDrawLampposts(){
 	}
 }
 
-var lastENTER=false;
 function poolingNewData(start){
-	poolingTimeout = window.setTimeout(poolingNewData,10000);
+	/*poolingTimeout = window.setTimeout(poolingNewData,2000);
 	if(!start){
 		var lat1=lamppostMap.getBounds().getSouthWest().lat();
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
 		var lat2=lamppostMap.getBounds().getNorthEast().lat();
 		var long2=lamppostMap.getBounds().getNorthEast().lng();
-		ajaxGet("http://farolapp.linkeddata.es/api/lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"2s"},
+		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"2s"},
 			function(data){
 			changeData(data['lampposts']);
 		},
@@ -250,7 +415,7 @@ function poolingNewData(start){
 			changeData(randomGeometries.modifyRandomGeometry(drewGeometries));
 			//console.log(error);
 		});
-	}
+	}*/
 }
 
 function changeData(data){
@@ -298,78 +463,18 @@ function toggleFormContainer(){
 	jQuery("#specialForm").css("display","");
 }
 
-var drewGeometries={};
-var geometriesLimitOnZoomHigh=3000;
-var geometriesLimitOnZoomLow=300;
-var geometriesChangeOnZoom=19;
-var changeFillColors={
-	"red":"#D80027",
-	"orange":"#E38F22",
-	"green":"#91DC5A",
-	"blue":"#3289C7",
-	"white":"#FFFFFF",
-	"yellow":"#FFDA44",
-	"default":"#FFFFFF"
-};
-var changeStrokeColors={
-	"red":"#D80027",
-	"orange":"#E38F22",
-	"green":"#91DC5A",
-	"blue":"#3289C7",
-	"white":"#FFFFFF",
-	"yellow":"#FFDA44",
-	"default":"#FFFFFF"
-};
-var getImageColors={
-	"red":"resources/img/markers/red.png",
-	"orange":"resources/img/markers/orange.png",
-	"green":"resources/img/markers/green.png",
-	"blue":"resources/img/markers/blue.png",
-	"white":"resources/img/markers/white.png",
-	"yellow":"resources/img/markers/yellow.png",
-	"default":"resources/img/markers/white.png"
-};
-var changeWeight={
-	"high":20,
-	"medium":10,
-	"low":5
-};
-var changeRadius={
-	"high":5,
-	"medium":3,
-	"low":2
-}
-var translatePollution={
-	"high":"Alto",
-	"medium":"Medio",
-	"low":"Bajo"
-};
-var translateLampColors={
-	"red":"Rojo",
-	"orange":"Naranja",
-	"green":"Verde",
-	"blue":"Azul",
-	"white":"Blanco",
-	"yellow":"Amarillo",
-	"default":"Sin asignar"
-};
-var translateRadius={
-	"high":changeRadius["high"]+" metros",
-	"medium":changeRadius["medium"]+" metros",
-	"low":changeRadius["low"]+" metros"
-}
 
-var heatmapLayer = null;
 
 function drawGeometry(geo){
-	var strokeColorVar;
-	var fillColorVar;
+	var strokeColorVar = changeStrokeColors["default"];
+	var fillColorVar =  changeFillColors["default"];
 	if(geo["color"]!=null){
 		strokeColorVar = changeStrokeColors[geo["color"]];
 		fillColorVar =  changeFillColors[geo["color"]];
-	}else{
-		strokeColorVar = changeStrokeColors["default"];
-		fillColorVar =  changeFillColors["default"];
+	}
+	var radius =  changeRadius["default"];
+	if(geo["radius"]!=null){
+		radius =  changeRadius[geo["radius"]];
 	}
 	if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
 		var farolCircle = new google.maps.Circle({
@@ -380,7 +485,7 @@ function drawGeometry(geo){
 	      fillOpacity: 0.35,
 	      map: lamppostMap,
 	      center: {lat: geo["latitude"], lng: geo["longitude"]},
-	      radius: changeRadius[geo["radius"]] 
+	      radius: radius 
 	    });
 		addInfoWindow(farolCircle, geo,lamppostMap);
 		drewGeometries[geo["id"]] = farolCircle;
@@ -414,24 +519,39 @@ function drawGeometries(geometries,onlyLamppostUpdate){
 	var overLimitHigh = false;
 	var overLimitLow = false;
 	var count=0;
+	jQuery.each(drewGeometries,function(id,lamppost){
+		count++;
+	});
+	var timeNumber = 0;
 	jQuery.each(geometries,function(i,geo){
 		if(!onlyLamppostUpdate){
-			if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
-				if(count<geometriesLimitOnZoomLow){
-					drawGeometry(geo);
+			if(geo['id'] && !drewGeometries[geo['id']]){
+				if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
+					if(count<geometriesLimitOnZoomLow){
+						window.setTimeout(function() {
+							drawGeometry(geo);
+						}, timeNumber);
+						timeNumber++;
+					}else{
+						overLimitLow = true;
+					}
 				}else{
-					overLimitLow = true;
+					if(count<geometriesLimitOnZoomHigh){
+						window.setTimeout(function() {
+							drawGeometry(geo);
+						}, timeNumber);
+						timeNumber++;
+					}else{
+						overLimitHigh = true;
+					}
 				}
-			}else{
-				if(count<geometriesLimitOnZoomHigh){
-					drawGeometry(geo);
-				}else{
-					overLimitHigh = true;
-				}
+				count++;
 			}
-			count++;
 		}else{
-			drawGeometry(geo);
+			window.setTimeout(function() {
+				drawGeometry(geo);
+			}, timeNumber);
+			timeNumber++;
 		}
 		if(geo['pollution'] != null && !onlyLamppostUpdate){
 				heatMapData.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
@@ -446,13 +566,15 @@ function drawGeometries(geometries,onlyLamppostUpdate){
 			});
 		heatmapLayer.setMap(pollutionMap);
 	}
-	if(overLimitHigh){
-		swal("Limite excedido","El límite de:"+geometriesLimitOnZoomHigh+" farolas ha sido excedido. Se han quedado farolas sin dibujar.","error");
-		isLoading=false;
+	if(overLimitHigh){		
+		lastWarning = "El límite de:"+geometriesLimitOnZoomHigh+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
+		jQuery("#warningLamppost img").attr("alt",lastWarning);
+		jQuery("#warningLamppost").css("display","");
 	}
 	if(overLimitLow){
-		swal("Limite excedido","El límite de:"+geometriesLimitOnZoomLow+" farolas ha sido excedido. Se han quedado farolas sin dibujar.","error");
-		isLoading=false;
+		lastWarning = "El límite de:"+geometriesLimitOnZoomLow+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
+		jQuery("#warningLamppost img").attr("alt",lastWarning);
+		jQuery("#warningLamppost").css("display","");
 	}
 }
 
@@ -472,17 +594,29 @@ function drawGeometriesPending(geometries){
 			opacity:0.35
 		});
 		addInfoWindow(marker, geo,lamppostMap);
-		drewGeometries[geo["id"]] = marker;
+		drewGeometriesPending[geo["id"]] = marker;
 	});
 }
 
 function addInfoWindow(marker,geo,map){
+	var color = translateLampColors['default'];
+	var pollution = translatePollution['default'];
+	var radius = translateRadius['default'];
+	if(geo['color']!=null){
+		color = translateLampColors[geo['color']];
+	}
+	if(geo['pollution']!=null){
+		pollution = translatePollution[geo['pollution']];
+	}
+	if(geo['radius']!=null){
+		radius = translateRadius[geo['radius']];
+	}
   var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
 '<span>Longitud: '+geo['longitude']+'</span><br>'+
-'<span>Radio de luz: '+translateRadius[geo['radius']]+'</span><br>'+
-'<span>Color de bombilla: '+translateLampColors[geo['color']]+'</span><br>'+
-'<span>Contaminación lumínica: '+translatePollution[geo['pollution']]+'</span><br>'+
-'<a style="color:blue;cursor:pointer" onclick="loadPostForm(\''+geo['id']+'\','+geo['latitude']+','+geo['longitude']+',toggleFormContainer)">Anotar cambios</a>';
+'<span>Radio de luz: '+radius+'</span><br>'+
+'<span>Color de bombilla: '+color+'</span><br>'+
+'<span>Contaminación lumínica: '+pollution+'</span><br>'+
+'<a style="color:blue;cursor:pointer" onclick="loadPostForm(\''+geo['id']+'\','+geo['latitude']+','+geo['longitude']+','+lamppostMap.getZoom()+',toggleFormContainer)">Anotar cambios</a>';
 
   var infowindow = new google.maps.InfoWindow({
     content: contentString

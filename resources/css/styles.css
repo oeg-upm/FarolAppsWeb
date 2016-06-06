@@ -385,7 +385,7 @@ div.dropClickMenu{
 }
 
 #specialForm{
-	background:#909090;
+	background: #CCC;
 	color:white;
 	z-index:4;
 	overflow-y:auto;
@@ -446,7 +446,33 @@ div.dropClickMenu{
     transition: box-shadow 0.2s ease-out;
 }
 
+.warningLamppost{
+	cursor:pointer;
+	background-color: #414141;
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	width: 45px;
+	height:45px;
+	border-radius:25px;
+	-webkit-box-shadow: 0px 0px 10px 0px rgba(230, 230, 230, 0.5);
+	-moz-box-shadow:    0px 0px 10px 0px rgba(230, 230, 230, 0.5);
+	box-shadow:         0px 0px 10px 0px rgba(230, 230, 230, 0.5);
+	-webkit-transition: box-shadow 0.2s ease-out;
+    -o-transition: box-shadow 0.2s ease-out;
+    -moz-transition: box-shadow 0.2s ease-out;
+    -ms-transition: box-shadow 0.2s ease-out;
+    -kthtml-transition: box-shadow 0.2s ease-out;
+    transition: box-shadow 0.2s ease-out;
+}
+
 .addLamppost.effect{
+	-webkit-box-shadow: 0px 0px 20px 0px rgba(255, 255, 255, 0.8);
+	-moz-box-shadow:    0px 0px 20px 0px rgba(255, 255, 255, 0.8);
+	box-shadow:         0px 0px 20px 0px rgba(255, 255, 255, 0.8);	
+}
+
+.warningLamppost.effect{
 	-webkit-box-shadow: 0px 0px 20px 0px rgba(255, 255, 255, 0.8);
 	-moz-box-shadow:    0px 0px 20px 0px rgba(255, 255, 255, 0.8);
 	box-shadow:         0px 0px 20px 0px rgba(255, 255, 255, 0.8);	
@@ -455,6 +481,32 @@ div.dropClickMenu{
 .addLamppost > img{
 	width:30px;
 	height:30px;
+}
+
+.warningLamppost > img{
+	width: 45px;
+	height:45px;
+}
+
+.mapLoading{
+	cursor:pointer;
+	background-color: #FFFFFF;
+	position: absolute;
+	left: 49%;
+	top: 20px;
+	width: 80px;
+	height:80px;
+	border-radius:8px;
+	-webkit-box-shadow: 0px 0px 10px 0px rgba(50, 50, 50, 0.5);
+	-moz-box-shadow:    0px 0px 10px 0px rgba(50, 50, 50, 0.5);
+	box-shadow:         0px 0px 10px 0px rgba(50, 50, 50, 0.5);
+}
+
+.mapLoading img{
+	margin-top:5px;
+	margin-left:5px;
+	width: 70px;
+	height:70px;
 }
 
 .notAnimationOnLoad{
