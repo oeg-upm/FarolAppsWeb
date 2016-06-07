@@ -73,7 +73,6 @@ var translateRadius={
 
 var heatmapLayer = null;
 var markerCluster = null;
-var markersForCluster = [];
 
 var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
 var lamppostMap;
@@ -83,16 +82,6 @@ var refreshLoadingTimeout=null;
 var poolingTimeout=null;
 var firtsStart=true;
 var lastZoom = 15;
-
-function showModalLoading(){
-	var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
-	//var imageHtml = "";
-	swal({   title: "Agrupando farolas", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
-}
-
-function closeModalLoading(){
-	swal.close();
-}
 
 function showLoading(){
 	/*var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
@@ -107,22 +96,19 @@ function closeLoading(){
 }
 
 function showAboutUs(){
-	var width = (jQuery(window).width()*85.0)/100.0;
-	var height = (jQuery(window).height()*60.0)/100.0;
-	var html = "<div style='text-align:left;overflow-y:auto;max-height:"+height+"px;max-width:"+width+"px'>";
-	html+= '<p>Web design/javascript by:</p><br>';
-    html += "<p style='margin-left:12px;'>Francisco Siles</p><br>";
-    html += "<p style='margin-left:12px;'>Carlos Blanco</p><br>";
+	var html = "<p>Web design/javascript by:</p><br>";
+    html += "<p style='margin-left:6px;'>Francisco Siles</p><br>";
+    html += "<p style='margin-left:6px;'>Carlos Blanco</p><br>";
     html += "<br>";
     html += "<p>Developed by:</p><br>";
-    html += "<p style='margin-left:12px;'>Carlos Badenes</p><br>";
-    html += "<p style='margin-left:12px;'>Fernando Serena</p><br>";
-    html += "<p style='margin-left:12px;'>Esteban Gonz&iacutelez</p><br>";
-    html += "<p style='margin-left:12px;'>Nandana</p><br>";
+    html += "<p style='margin-left:6px;'>Carlos Badenes</p><br>";
+    html += "<p style='margin-left:6px;'>Fernando Serena</p><br>";
+    html += "<p style='margin-left:6px;'>Esteban Gonz&iacutelez</p><br>";
+    html += "<p style='margin-left:6px;'>Nandana</p><br>";
     html += "<br>";
     html += "<p>Ontology Engineering Group</p><br>";
-    html += "<p style='margin-left:12px;'>oeg-upm.net</p><br></div>";
-    swal({   title: "Acerca de", text:html,showConfirmButton:true, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
+    html += "<p style='margin-left:6px;'>oeg-upm.net</p><br>";
+    swal({   title: "Acerca De", text:html,showConfirmButton:true, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
 }
 
 /*Funcion que registra los eventos del menu superior y del menu lateral izquierdo*/
@@ -164,31 +150,19 @@ function bindEvents(){
 			jQuery("nav").addClass("notActivateResponsive");
 		}
 	});
-	var startPressEvent = 'mousedown';
-	var stopPressEvent = 'mouseup';
-	if(window.mobileAndTabletcheck){
-		startPressEvent = 'touchstart';
-		stopPressEvent = 'touchend';
-	}
 	//Button añadir farola
-	jQuery("#addLamppost").bind(startPressEvent,function(event){
+	jQuery("#addLamppost").bind("touchstart mousedown",function(event){
 		jQuery("#addLamppost").addClass("effect");
 	});
-	jQuery("#addLamppost").bind(stopPressEvent,function(event){
+	jQuery("#addLamppost").bind("touchend mouseup",function(event){
 		jQuery("#addLamppost").removeClass("effect");
 		loadPostForm(null,lamppostMap.getCenter().lat(),lamppostMap.getCenter().lng(),lamppostMap.getZoom(),toggleFormContainer);
 	});
 	//Button warning
-	jQuery("#warningLamppost").bind(startPressEvent,function(event){
+	jQuery("#warningLamppost").bind("touchstart mousedown",function(event){
 		jQuery("#warningLamppost").addClass("effect");
 	});
-	
-	if(window.mobileAndTabletcheck()){
-		
-	}else{
-		
-	}
-	jQuery("#warningLamppost").bind(stopPressEvent,function(event){
+	jQuery("#warningLamppost").bind("touchend mouseup",function(event){
 		jQuery("#warningLamppost").removeClass("effect");
 		swal("Advertencia:",lastWarning,"warning");
 	});
@@ -199,10 +173,10 @@ function bindEvents(){
 		}
 	});
 	//Button warning and addLampost
-	jQuery("nav > div.button").bind(startPressEvent,function(event){
+	jQuery("nav > div.button").bind("touchstart mousedown",function(event){
 		jQuery(this).addClass("effect");
 	});
-	jQuery("nav > div.button").bind(stopPressEvent,function(event){
+	jQuery("nav > div.button").bind("touchend mouseup",function(event){
 		jQuery(this).removeClass("effect");
 	});
 	
@@ -282,6 +256,12 @@ function startWebPage(){
 		if(jQuery('#specialForm').hasClass('notDisplay')){
 		if(!firtsStart){
 			jQuery("#warningLamppost").css("display","none");
+			pollutionMap.setCenter(lamppostMap.getCenter());
+			var newZoom = lamppostMap.getZoom();
+			if(newZoom>=1){
+				newZoom--;
+			}
+			pollutionMap.setZoom(newZoom);
 			if(lamppostMap.getZoom()>=19){
 				jQuery('#addLamppost').css('display','')
 			}else{
@@ -295,14 +275,12 @@ function startWebPage(){
 				window.clearTimeout(refreshLoadingTimeout);
 				refreshLoadingTimeout=null;
 			}
-			if(lamppostMap.getZoom()>geometriesClusterZoom){
-				markerCluster.clearMarkers();
+			if(lamppostMap.getZoom()>geometriesClusterZoom 
+					|| (lastZoom>geometriesClusterZoom && lamppostMap.getZoom()<=geometriesClusterZoom)){
 				refreshLoadingTimeout = window.setTimeout(function(){
-					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
-						showLoading();
-						isLoading=true;
-					}
-				},150);
+					showLoading();
+					isLoading=true;
+				},1450);
 		    	refreshTimeout = window.setTimeout(function() {
 		    		if(refreshTimeout){
 		    			window.clearTimeout(refreshTimeout);
@@ -313,44 +291,23 @@ function startWebPage(){
 		    			poolingTimeout = null;
 		    		}
 		    		getAndDrawLampposts();
-		    	}, 200);
-			}
-			if(lastZoom>geometriesClusterZoom && lamppostMap.getZoom()<=geometriesClusterZoom){
-				removeNotVisibleGeometries(true, [])
-				showLoading();
-				markerCluster.addMarkers(markersForCluster);
-				closeLoading();
-				lastZoom=lamppostMap.getZoom();
+		    	}, 1500);
 			}
 		}else{
+			pollutionMap.setCenter(lamppostMap.getCenter());
+			var newZoom = lamppostMap.getZoom();
+			if(newZoom>=1){
+				newZoom--;
+			}
+			pollutionMap.setZoom(newZoom);
 			showLoading();
 			isLoading=true;
 			getAndDrawLampposts();
 			firtsStart=false;
 		}
-		if(jQuery("#lamppostMapContainer").hasClass("animationEnter")){
-			pollutionMap.setCenter(lamppostMap.getCenter());
-			pollutionMap.setZoom(lamppostMap.getZoom());
-		}
 		}
 	  });
-	pollutionMap.addListener('bounds_changed', function() {
-		if(jQuery("#pollutionMapContainer").hasClass("animationEnter")){
-			lamppostMap.setCenter(pollutionMap.getCenter());
-			lamppostMap.setZoom(pollutionMap.getZoom());
-		}
-	});
-	showModalLoading();
-	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
-			function(data){
-				drawClusterGeometries(data['lampposts'])
-				closeModalLoading();
-			}
-			,function(error){
-				console.log("ERROR");
-				console.log(error);
-				closeModalLoading();
-			});
+	//getAndDrawLampposts();
 }
 
 function existsTheIdInArray(id,array){
@@ -409,6 +366,7 @@ function getAndDrawLampposts(){
 	}
 	ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
 			function(data){
+				console.log(data['lampposts'].length);
 				if(lamppostMap.getZoom()<=geometriesClusterZoom){
 					removeNotVisibleGeometries(true,data);
 				}else if(lamppostMap.getZoom()<geometriesChangeOnZoom && lastZoom<geometriesChangeOnZoom){
@@ -418,9 +376,15 @@ function getAndDrawLampposts(){
 				}else{
 					removeNotVisibleGeometries(true,data);
 				}
+				if(markerCluster){
+			    	markerCluster.clearMarkers();
+			    	markerCluster = null;
+			    }
 				lastZoom = lamppostMap.getZoom();
 				if(lamppostMap.getZoom()>geometriesClusterZoom){
 					drawGeometries(data['lampposts']);
+				}else{
+					drawClusterGeometries(data['lampposts']);
 				}
 				poolingNewData(true);
 	    		if(isLoading){
@@ -572,7 +536,8 @@ function drawGeometry(geo){
 	}
 }
 
-function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
+function drawGeometries(geometries,onlyLamppostUpdate){
+	var heatMapData = [];
 	var overLimitHigh = false;
 	var overLimitLow = false;
 	var count=0;
@@ -610,7 +575,19 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 			}, timeNumber);
 			timeNumber++;
 		}
+		if(geo['pollution'] != null && !onlyLamppostUpdate){
+				heatMapData.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+		}
 	});
+	if(heatmapLayer && !onlyLamppostUpdate){
+		heatmapLayer.setMap(null);
+	}
+	if(!onlyLamppostUpdate){
+		heatmapLayer = new google.maps.visualization.HeatmapLayer({
+		  	data: heatMapData
+			});
+		heatmapLayer.setMap(pollutionMap);
+	}
 	if(overLimitHigh){		
 		lastWarning = "El límite de:"+geometriesLimitOnZoomHigh+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
 		jQuery("#warningLamppost img").attr("alt",lastWarning);
@@ -668,19 +645,12 @@ function drawClusterGeometries(geometries){
 		markers.push(marker);
 	});
 	var options = {imagePath: 'resources/img/cluster/cluster',maxZoom:geometriesClusterZoom};
-	markerCluster = new MarkerClusterer(lamppostMap, [], options);
-	markersForCluster = markers;
-	
-	var heatMapData = [];
-	jQuery.each(geometries,function(i,geo){
-		if(geo['pollution'] != null){
-			heatMapData.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
-		}
-	});
-	heatmapLayer = new google.maps.visualization.HeatmapLayer({
-	  	data: heatMapData
-		});
-	heatmapLayer.setMap(pollutionMap);
+	var newMarkerCluster = new MarkerClusterer(lamppostMap, markers, options);
+	if(markerCluster){
+    	markerCluster.clearMarkers();
+    	markerCluster = null;
+    }
+	markerCluster = newMarkerCluster;
 }
 
 function addInfoWindow(marker,geo,map){

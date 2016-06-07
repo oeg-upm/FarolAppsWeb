@@ -320,7 +320,7 @@ function updateFormMap(lat, lng, zoom, isNew) {
     if (!isNew) {
         if (!currentFormMarker) {
             var pos = new google.maps.LatLng(lat, lng);
-            createDraggedMarker(pos, "resources/img/optionForm/farola_ico.png", true); // true is for not draggable marker
+            createDraggedMarker(pos, "resources/img/markers/farola_ico1.png", true); // true is for not draggable marker
         } else {
             moveMarkerToLocation(currentFormMarker, lat, lng);
         }
@@ -891,6 +891,8 @@ function initDrag(e) {
     return false
 }
 
+var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
+
 function buildMap(lat, lng) {
     /* Add map header event */
     $("#mapheader").on("click", toogleMapContainer);
@@ -915,7 +917,8 @@ function buildMap(lat, lng) {
         zoomControlOptions: {
             style: g.ZoomControlStyle.SMALL
         },
-        mapTypeId: google.maps.MapTypeId.HYBRID
+        //mapTypeId: google.maps.MapTypeId.HYBRID
+        styles: mapStyles,
     };
     map = new g.Map(document.getElementById("formMap"), a);
     iw = new g.InfoWindow();
@@ -934,11 +937,11 @@ function buildMap(lat, lng) {
 
 /* Traducción */
 var tradSpanish = {
-    "wattage": "voltaje",
-    "lamp": "bombilla",
-    "height": "altura",
-    "light": "luz",
-    "color": "color",
-    "covered": "protección",
-    "status": "estado"
+    "wattage": "Voltaje",
+    "lamp": "Bombilla",
+    "height": "Altura",
+    "light": "Luz",
+    "color": "Color",
+    "covered": "Protección",
+    "status": "Estado"
 };

@@ -310,25 +310,30 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
 }
 
 /* Material Design button */
-.button {
+.formbutton {
     display: inline-block;
     position: relative;
     line-height: 32px;
     border-radius: 2px;
     font-size: 0.9em;
-    background-color: #4285f4;
+    background-color: #282828;
     color: #fff;
+    cursor: pointer;
 }
-.button.raised {
+.formbutton.raised:hover {
+    box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+    transition-delay: 0s;
+}
+.formbutton.raised {
     transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     transition-delay: 0.2s;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
 }
-.button.raised:active {
+.formbutton.raised:active {
     box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
     transition-delay: 0s;
 }
-.button > paper-ripple {
+.formbutton > paper-ripple {
     border-radius: 2px;
     overflow: hidden;
 }
