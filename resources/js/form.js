@@ -26,6 +26,7 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
         hideDraggableLamppost();
         setTimeout(closeMapContainer, 1000);
     }
+    setTimeout(openStreetContainer, 500);
     currentlamppostID = id;
     currentlamppostZoom = theZoom;
     if(firstLoad) {
@@ -109,12 +110,29 @@ function toogleMapContainer() {
         openMapContainer();
     }
 };
+function openStreetContainer() {
+    $('#streetViewContainer').addClass('open');
+    $('#streettogleico').addClass('fa-angle-double-up');
+    $('#streettogleico').removeClass('fa-angle-double-down');
+};
+function closeStreetContainer() {
+    $('#streetViewContainer').removeClass('open');
+    $('#streettogleico').addClass('fa-angle-double-down');
+    $('#streettogleico').removeClass('fa-angle-double-up');
+};
+function toogleStreetContainer() {
+    if ($('#streetViewContainer').attr('class') == "open") {
+        closeStreetContainer();
+    } else {
+        openStreetContainer();
+    }
+};
 function showDraggableLamppost() {
-    $('#alloc').removeClass('hidden');
+    $('#markerContainer').removeClass('hidden');
     $('#markers').removeClass('hidden');
 };
 function hideDraggableLamppost() {
-    $('#alloc').addClass('hidden');
+    $('#markerContainer').addClass('hidden');
     $('#markers').addClass('hidden');
 };
 var formTemplate = {
@@ -529,6 +547,8 @@ function loadStreetView(latitude, lng, heading, pitch) {
 };
 
 function initStreetMap(lat, lng, heading, pitch) {
+    /* Add StreetMap header event */
+    $("#streetheader").on("click", toogleStreetContainer);
     var place = {lat: lat, lng: lng};
 
     // Set up the map

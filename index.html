@@ -54,22 +54,29 @@
 				<article id='specialForm' class='maxWidthAndHeightAbsolute notDisplay' style='display:none'>
 			        <div id="settingsBox">
 						<div id="formMapContainer">
-							<div id="mapheader"> <i class="headericon fa fa-map-marker"></i>Posición<i class="headericon fa fa-map-o"></i><i id="mapttogleico" class="fa"></i></div>
-							<div id="alloc">Coloca la nueva farola sobre el mapa</div>
+							<div id="mapheader"> <i class="headericonleft fa fa-map-marker"></i><span class="headertitle">Posición</span><i class="headericonright fa fa-map-o"></i><i id="mapttogleico" class="fa"></i></div>
 							<div id="markers">
-								<div id="dragableMarker" class="drag" style="left:0; background-image: url('resources/img/optionForm/farola_ico.png')">
+								<div id="dragableMarker" class="drag" style="background-image: url('resources/img/optionForm/farola_ico.png')">
 								</div>
+							</div>
+							<div id="markerContainer">
+								<div id="alloc">Arrastramé al mapa</div>
 							</div>
 			                <div id="formMap" class=""></div>
 			            </div>
 			            <div id="streetViewContainer">
+			            	<div id="streetheader"> <i class="headericonleft fa fa-lightbulb-o"></i><span class="headertitle">Vista</span><i class="headericonright fa fa-street-view"></i><i id="streettogleico" class="fa"></i></div>
 			                <div id="streetMap" class=""></div>
 			            </div>
 			            <div id="formContainer">
 			                <div id="myList" class="list-group"></div>
 			            </div>
 			            <div id="controlsContainer">
-			                <input id="controlsContainer" type="button" value="Actualizar farola" onclick="submitLampInfo()"/>
+			                <!--input id="controlsContainer" type="button" value="Actualizar farola" onclick="submitLampInfo()"/-->
+			                <div id="controlsContainer"class="button raised" onclick="submitLampInfo()">
+						      	<div class="center" fit>Actualizar farola</div>
+						    	<paper-ripple fit></paper-ripple>
+						    </div>
 			            </div>
 			        </div>
 				</article>
