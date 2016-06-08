@@ -1,0 +1,79 @@
+.aboutSweetAlert {
+    width: 30% !important;
+    left: 35% !important;
+    right: 35%;
+    height: 80%;
+    top: 10% !important;
+    margin: 0 !important;
+}
+
+@media screen and (max-width : 1200px) {
+	.aboutSweetAlert {
+	    width: 36% !important;
+	    left: 32% !important;
+	    right: 32%;
+	}
+}
+
+@media screen and (max-width : 900px) {
+	.aboutSweetAlert {
+	    width: 46% !important;
+	    left: 27% !important;
+	    right: 27%;
+	}
+}
+
+@media screen and (max-width : 766px) {
+	.aboutSweetAlert {
+	    width: 56% !important;
+	    left: 22% !important;
+	    right: 22%;
+	}
+}
+
+@media screen and (max-width : 600px) {
+	.aboutSweetAlert {
+	    width: 94% !important;
+	    left: 3% !important;
+	    right: 3%;
+	}
+}
+
+.aboutSweetAlert p {
+    width: 100%;
+    height: 90%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.aboutSweetAlert h2 {
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+    color: #000082 !important;
+    height: 10%;
+    white-space: nowrap;
+}
+#aboutContainer {
+}
+
+.aboutVcard {
+	min-width: 100px !important;
+}
+
+.vcardName {
+	display: block;
+}
+
+.vcardImage {
+    width: 59px;
+    height: 73px;
+    display: inline-block;
+    background-size: 58px 72px;
+    background-repeat: no-repeat;
+    text-align: center;
+}
+
+.aboutLink {
+	cursor: pointer;
+	text-decoration: 
+}

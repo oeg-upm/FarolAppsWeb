@@ -17,6 +17,7 @@
 		<script src='resources/js/tempRandomGeometries.js' type='text/javascript'></script>
 		<script src='resources/js/markerclusterer.js' type='text/javascript'></script>
 		<link rel='stylesheet' href='resources/css/styles.css'>
+		<link rel="stylesheet" href="resources/css/about.css">
 		<link rel='stylesheet' href='resources/css/animations.css'>
 		<link rel="stylesheet" href="resources/css/formStyle.css">
 		<!--Bootstrap min-->
@@ -40,11 +41,11 @@
 				<!--  PUT A LOGO OR LETTERS -->
 				<div class='flex-item Logo'><img src="resources/img/farolapp4all_logo.png" alt="Farolapp4All Logo" class='Logo LogoMin'></img></div>
 				<nav class='navMenu flex-item-main maxCrossAxisFlexSize mainAxisFlexCenter crossAxisFlexCenter notActivateResponsive'>
-					<div class='button'><a onclick='showLamppostMap()'>Mapa de farolas</a></div>
-					<div class='button'><a onclick='showPollutionMap()'>Mapa de contaminación lumínica</a></div>
-					<div class='button'><a onclick='showAboutUs()'>Acerca de</a></div>
+					<div class='gDesignButton' onclick='showLamppostMap()'><a>Mapa de farolas</a></div>
+					<div class='gDesignButton' onclick='showPollutionMap()'><a>Mapa de contaminación lumínica</a></div>
+					<div class='gDesignButton' onclick='showAboutUs()'><a>Acerca de</a></div>
 				</nav>
-				<div class='flex-item Logo'><img src="resources/img/OEG_Logo.png" alt="OEG Logo" class='Logo'></img></div>
+				<div class='flex-item Logo removeOnTabletOrMobile'><img src="resources/img/OEG_Logo.png" alt="OEG Logo" class='Logo'></img></div>
 				<div class='flex-item imgMenu'><img src="resources/img/nav.png" alt="Menu IMG" class='imgMenu'></img></div>
 			</header>
 			<section id='mainBody' class='flex-container-row flex-item-main maxCrossAxisFlexSize maxMainAxisFlexSize mainContent'>
@@ -57,7 +58,7 @@
 						<div id="formMapContainer">
 							<div id="mapheader"> <i class="headericonleft fa fa-map-marker"></i><span class="headertitle">Posición</span><i class="headericonright fa fa-map-o"></i><i id="mapttogleico" class="fa"></i></div>
 							<div id="markers">
-								<div id="dragableMarker" class="drag" style="background-image: url('resources/img/markers/farola_ico1.png')">
+								<div id="dragableMarker" class="drag" style="background-image: url('resources/img/markers/farola_ico2.png')">
 								</div>
 							</div>
 							<div id="markerContainer">

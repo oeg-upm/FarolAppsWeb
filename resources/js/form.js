@@ -320,7 +320,7 @@ function updateFormMap(lat, lng, zoom, isNew) {
     if (!isNew) {
         if (!currentFormMarker) {
             var pos = new google.maps.LatLng(lat, lng);
-            createDraggedMarker(pos, "resources/img/markers/farola_ico1.png", true); // true is for not draggable marker
+            createDraggedMarker(pos, "resources/img/markers/farola_ico2.png", true); // true is for not draggable marker
         } else {
             moveMarkerToLocation(currentFormMarker, lat, lng);
         }
@@ -504,7 +504,7 @@ function newRow(data) {
     for (var key in data.items) {
         var optID = data.paramId + '_' + key;
         var mc = data.selected == key ? "selected": "";
-        rowData.append('<div class="form_flex-item ' + mc + '"><div><i class="checkIco fa fa-check-circle" aria-hidden="true"></i><img title="' + key + '"id="' + optID + '" class="optImage" src="' + data.items[key] + '"></img></div></div>');
+        rowData.append('<div class="form_flex-item' + mc + '"><div><i class="checkIco fa fa-check-circle" aria-hidden="true"></i><img title="' + key + '"id="' + optID + '" class="optImage" src="' + data.items[key] + '"></img></div></div>');
         $("#" + optID).on("click",  switchOption.bind(null, data.paramId, key));
     }
 };

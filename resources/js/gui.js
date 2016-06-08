@@ -18,7 +18,7 @@ var changeFillColors={
 	"blue":"#3289C7",
 	"white":"#FFFFFF",
 	"yellow":"#FFDA44",
-	"default":"#FFFFFF"
+	"default":"rgba(255,255,255,0)"
 };
 var changeStrokeColors={
 	"red":"#D80027",
@@ -36,12 +36,12 @@ var getImageColors={
 	"blue":"resources/img/markers/blue.png",
 	"white":"resources/img/markers/white.png",
 	"yellow":"resources/img/markers/yellow.png",
-	"default":"resources/img/markers/white.png"
+	"default":"resources/img/markers/borderWhite.png"
 };
 var changeWeight={
-	"high":20,
-	"medium":10,
-	"low":5
+	"high":3.5,
+	"medium":2.5,
+	"low":1.5
 };
 var changeRadius={
 	"high":3.5,
@@ -71,9 +71,17 @@ var translateRadius={
 	"default":"&lt;Desconocido&gt;"
 }
 
-var heatmapLayer = null;
+var heatmapLayerLow = null;
+var heatmapLayerMedium = null;
+var heatmapLayerHigh = null;
 var markerCluster = null;
 var markersForCluster = [];
+var finalClusterSize = -1;
+
+var heatMapGradientLow = ['rgba(0, 255, 255, 0)','#80cbc4','#4db6ac','#26a69a','#009688','#00897b','#00796b','#00695c','#004d40'];
+var heatMapGradientMedium = ['rgba(0, 255, 255, 0)','#fff59d','#fff176','#ffee58','#ffeb3b','#ffeb33','#ffe81a','#ffe600','#e6cf00'];
+var heatMapGradientHigh = ['rgba(0, 255, 255, 0)','#ffab91','#ff8a65','#ff7043','#ff5722','#f4511e','#e64a19','#d84315','#bf360c'];
+
 
 var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
 var lamppostMap;
@@ -87,7 +95,7 @@ var lastZoom = 15;
 function showModalLoading(){
 	var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
 	//var imageHtml = "";
-	swal({   title: "Agrupando farolas", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
+	swal({   title: "Agrupando farolas. Por favor espere.", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
 }
 
 function closeModalLoading(){
@@ -106,23 +114,48 @@ function closeLoading(){
 	jQuery('#mapLoading ').css('display','none');
 }
 
+var avatars = {
+	'cblanco': "resources/img/faces/cblanco.png",
+	'fran': "resources/img/faces/fran.png",
+	'fernando': "resources/img/faces/fernando.png",
+	'esteban': "resources/img/faces/esteban.png",
+	'cbadenes': "resources/img/faces/cbadenes.png",
+	'nandana': "resources/img/faces/nandana.png",
+}
 function showAboutUs(){
-	var width = (jQuery(window).width()*85.0)/100.0;
-	var height = (jQuery(window).height()*60.0)/100.0;
-	var html = "<div style='text-align:left;overflow-y:auto;max-height:"+height+"px;max-width:"+width+"px'>";
-	html+= '<p>Web design/javascript by:</p><br>';
-    html += "<p style='margin-left:12px;'>Francisco Siles</p><br>";
-    html += "<p style='margin-left:12px;'>Carlos Blanco</p><br>";
-    html += "<br>";
-    html += "<p>Developed by:</p><br>";
-    html += "<p style='margin-left:12px;'>Carlos Badenes</p><br>";
-    html += "<p style='margin-left:12px;'>Fernando Serena</p><br>";
-    html += "<p style='margin-left:12px;'>Esteban Gonz&iacutelez</p><br>";
-    html += "<p style='margin-left:12px;'>Nandana</p><br>";
-    html += "<br>";
-    html += "<p>Ontology Engineering Group</p><br>";
-    html += "<p style='margin-left:12px;'>oeg-upm.net</p><br></div>";
-    swal({   title: "Acerca de", text:html,showConfirmButton:true, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
+	var html = "<div id='aboutContainer'>";
+	html += '<h3>Front-end</h3>';
+	html += '<div  class="aboutSubCont flex-container">';
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Francisco Siles</span><i class='vcardImage' style='background-image: url(" + avatars['fran'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Blanco</span><i class='vcardImage' style='background-image: url(" + avatars['cblanco'] + ")'></i></div>";
+    html += '</div>';
+    html += "<h3>Back-end</h3>";
+	html += '<div class="aboutSubCont flex-container">';
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Badenes</span><i class='vcardImage' style='background-image: url(" + avatars['cbadenes'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Fernando Serena</span><i class='vcardImage' style='background-image: url(" + avatars['fernando'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Esteban Gonz&iacutelez</span><i class='vcardImage' style='background-image: url(" + avatars['esteban'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Nandana Mihindukulasooriya</span><i class='vcardImage' style='background-image: url(" + avatars['nandana'] + ")'></i></div>";
+    html += '</div>';
+    html += "<h3>Ontology Engineering Group</h3>";
+    html += "<a href='http://www.oeg-upm.net/'>http://www.oeg-upm.net/</p><div></a><br>";
+	html += "<h3>Agradecimientos</h3>";
+    html += "<a target='_blank' href='http://opendata.caceres.es/dataset/farolas-caceres'>Datos de alumbrado público de Cáceres facilitados por el Ayuntamiento de Cáceres en su portal de datos abiertos<a><br><br>";
+    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos sbiertos<a><br><br>";
+    html += "<a target='_blank' href='http://datos.madrid.es/sites/v/index.jsp?vgnextoid=930ebf3b03490510VgnVCM1000000b205a0aRCRD&vgnextchannel=20d612b9ace9f310VgnVCM100000171f5a0aRCRD'>Solicitud de datos de alumbrado público de Madrid (03/09/2015)<a><br><br>";
+    html += "</div>";
+    swal({
+    	title: "Acerca de Farolapp4All",
+    	customClass: 'aboutSweetAlert',
+    	text:html,
+    	allowEscapeKey:true,
+    	allowOutsideClick:true,
+    	html:true,
+    	type: null,
+    	showConfirmButton:false,
+    	showCancelButton: false,
+    	closeOnConfirm: false,
+    	showLoaderOnConfirm: false
+    });
 }
 
 /*Funcion que registra los eventos del menu superior y del menu lateral izquierdo*/
@@ -166,7 +199,7 @@ function bindEvents(){
 	});
 	var startPressEvent = 'mousedown';
 	var stopPressEvent = 'mouseup';
-	if(window.mobileAndTabletcheck){
+	if(window.mobileAndTabletcheck()){
 		startPressEvent = 'touchstart';
 		stopPressEvent = 'touchend';
 	}
@@ -182,12 +215,6 @@ function bindEvents(){
 	jQuery("#warningLamppost").bind(startPressEvent,function(event){
 		jQuery("#warningLamppost").addClass("effect");
 	});
-	
-	if(window.mobileAndTabletcheck()){
-		
-	}else{
-		
-	}
 	jQuery("#warningLamppost").bind(stopPressEvent,function(event){
 		jQuery("#warningLamppost").removeClass("effect");
 		swal("Advertencia:",lastWarning,"warning");
@@ -205,6 +232,12 @@ function bindEvents(){
 	jQuery("nav > div.button").bind(stopPressEvent,function(event){
 		jQuery(this).removeClass("effect");
 	});
+	
+	if(window.mobileAndTabletcheck()){
+		
+	}else{
+		
+	}
 	
 }
 
@@ -296,7 +329,9 @@ function startWebPage(){
 				refreshLoadingTimeout=null;
 			}
 			if(lamppostMap.getZoom()>geometriesClusterZoom){
-				markerCluster.clearMarkers();
+				if(markerCluster){
+					markerCluster.clearMarkers();
+				}
 				refreshLoadingTimeout = window.setTimeout(function(){
 					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
 						showLoading();
@@ -316,11 +351,29 @@ function startWebPage(){
 		    	}, 200);
 			}
 			if(lastZoom>geometriesClusterZoom && lamppostMap.getZoom()<=geometriesClusterZoom){
-				removeNotVisibleGeometries(true, [])
-				showLoading();
-				markerCluster.addMarkers(markersForCluster);
-				closeLoading();
-				lastZoom=lamppostMap.getZoom();
+				if(markersForCluster.length>=finalClusterSize && finalClusterSize>=0){
+						removeNotVisibleGeometries(true, []);
+						showLoading();
+						markerCluster.addMarkers(markersForCluster);
+						closeLoading();
+						lastZoom=lamppostMap.getZoom();
+				}else{
+					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") 
+							&& jQuery("#specialForm").hasClass("notDisplay")){
+						showModalLoading();
+						var interval = window.setInterval(function(){
+							if(markersForCluster.length>=finalClusterSize && finalClusterSize>=0){
+								window.clearInterval(interval);
+								closeModalLoading();
+								removeNotVisibleGeometries(true, []);
+								showLoading();
+								markerCluster.addMarkers(markersForCluster);
+								closeLoading();
+								lastZoom=lamppostMap.getZoom();
+							}
+						},55);
+					}
+				}
 			}
 		}else{
 			showLoading();
@@ -340,13 +393,17 @@ function startWebPage(){
 			lamppostMap.setZoom(pollutionMap.getZoom());
 		}
 	});
-	showModalLoading();
+	//showModalLoading();
 	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
 			function(data){
+				var startTime = new Date().getTime();
 				drawClusterGeometries(data['lampposts'])
-				closeModalLoading();
+				//closeModalLoading();
+				var stopTime = new Date().getTime();
+				console.log("Timpo de procesamiento:"+((stopTime-startTime)/1000.0));
 			}
 			,function(error){
+				finalClusterSize=0;
 				console.log("ERROR");
 				console.log(error);
 				closeModalLoading();
@@ -459,7 +516,7 @@ function getAndDrawLampposts(){
 }
 
 function poolingNewData(start){
-	/*poolingTimeout = window.setTimeout(poolingNewData,2000);
+	poolingTimeout = window.setTimeout(poolingNewData,2000);
 	if(!start){
 		var lat1=lamppostMap.getBounds().getSouthWest().lat();
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
@@ -473,7 +530,7 @@ function poolingNewData(start){
 			changeData(randomGeometries.modifyRandomGeometry(drewGeometries));
 			//console.log(error);
 		});
-	}*/
+	}
 }
 
 function changeData(data){
@@ -644,8 +701,12 @@ function drawGeometriesPending(geometries){
 }
 
 function drawClusterGeometries(geometries){
-	var markers = [];
+	//var markers = [];
+	finalClusterSize = geometries.length;
+	var time = 0.7;
+	var startTime = new Date().getTime();
 	jQuery.each(geometries,function(i,geo){
+		window.setTimeout(function(){
 		var url = getImageColors['default']; 
 		if(geo["color"]!=null && getImageColors[geo["color"]]){
 			url = getImageColors[geo["color"]];
@@ -665,22 +726,54 @@ function drawClusterGeometries(geometries){
 		  	icon: image,
 		  	opacity:0.35
 		});
-		markers.push(marker);
+		markersForCluster.push(marker);
+		if(i == geometries.length-1){
+			var stopTime = new Date().getTime();
+			console.log("Tiempo de procesamiento asíncrono:"+((stopTime-startTime)/1000.0));
+			console.log(markersForCluster.length);
+		}
+		},time);
+		time=time+0.7;
 	});
 	var options = {imagePath: 'resources/img/cluster/cluster',maxZoom:geometriesClusterZoom};
 	markerCluster = new MarkerClusterer(lamppostMap, [], options);
-	markersForCluster = markers;
+	//markersForCluster = markers;
 	
-	var heatMapData = [];
+	var heatMapDataLow = [];
+	var heatMapDataMedium = [];
+	var heatMapDataHigh = [];
 	jQuery.each(geometries,function(i,geo){
 		if(geo['pollution'] != null){
-			heatMapData.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+			if(geo['pollution'].toLowerCase() == 'high'){
+				heatMapDataHigh.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+			}else if(geo['pollution'].toLowerCase() == 'medium'){
+				heatMapDataLow.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+			}else{
+				heatMapDataLow.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+			}
 		}
 	});
-	heatmapLayer = new google.maps.visualization.HeatmapLayer({
-	  	data: heatMapData
+	//Low pollution heatmap
+	heatmapLayerLow = new google.maps.visualization.HeatmapLayer({
+	  	data: heatMapDataLow
 		});
-	heatmapLayer.setMap(pollutionMap);
+	heatmapLayerLow.setMap(pollutionMap);
+	heatmapLayerLow.set('opacity', 0.3);
+	heatmapLayerLow.set('gradient', heatMapGradientLow);
+	//Medium pollution heatmap
+	heatmapLayerMedium = new google.maps.visualization.HeatmapLayer({
+	  	data: heatMapDataMedium
+		});
+	heatmapLayerMedium.setMap(pollutionMap);
+	heatmapLayerMedium.set('opacity', 0.3);
+	heatmapLayerMedium.set('gradient', heatMapGradientMedium);
+	//High pollution heatmap
+	heatmapLayerHigh = new google.maps.visualization.HeatmapLayer({
+	  	data: heatMapDataHigh
+		});
+	heatmapLayerHigh.setMap(pollutionMap);
+	heatmapLayerHigh.set('opacity', 0.3);
+	heatmapLayerHigh.set('gradient', heatMapGradientHigh);
 }
 
 function addInfoWindow(marker,geo,map){
