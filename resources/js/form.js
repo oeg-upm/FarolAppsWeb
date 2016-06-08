@@ -10,6 +10,7 @@ var currentFormMarker;
 var firstLoad = true;
 var apiHost = "http://infra3.dia.fi.upm.es/api";
 var isNewLamppost;
+var isTempLamppost;
 var panorama;
 var formCallback;
 
@@ -19,9 +20,15 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
     if (id == null) {
         // New Lampost
         isNewLamppost = true;
+        isTempLamppost = false;
         showDraggableLamppost();
         setTimeout(openMapContainer, 1000);
     } else {
+        if (id.slice(0,3).toLowerCase() == "tmp") {
+            isTempLamppost = true;
+        } else {
+            isTempLamppost = false;
+        }
         isNewLamppost = false;
         hideDraggableLamppost();
         setTimeout(closeMapContainer, 1000);
@@ -33,13 +40,15 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
         setTimeout(buildMap.bind(null, lat, lng),200);
         setTimeout(loadStreetView.bind(null, lat, lng, 0, 0),200);
         openEmptyForm(id, lat, lng, currentlamppostZoom);
-        if (!isNewLamppost) {
+        if (!isNewLamppost && !isTempLamppost) {
             setTimeout(getLampInfo(),400);
         }
         firstLoad = false;
         callback();
     } else {
-        getLampInfo();
+        if (!isTempLamppost) {
+            getLampInfo();
+        }
         updateMaps(lat, lng, currentlamppostZoom, 0, 0, true);
         openEmptyForm(id, lat, lng, currentlamppostZoom);
         callback();
