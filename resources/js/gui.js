@@ -39,9 +39,9 @@ var getImageColors={
 	"default":"resources/img/markers/borderWhite.png"
 };
 var changeWeight={
-	"high":3.5,
-	"medium":2.5,
-	"low":1.5
+	"high":16,
+	"medium":8,
+	"low":4
 };
 var changeRadius={
 	"high":3.5,
@@ -64,6 +64,21 @@ var translateLampColors={
 	"yellow":"Amarillo",
 	"default":"&lt;Desconocido&gt;"
 };
+var translateLampType={
+	"vsap" : "Vapor de sódio de alta presión",
+	"vmcc" : "Vapor de mercurio colo corregido",
+	"vmap" : "Vapor de mercurio de alta presión",
+	"par" : "Reflector parabólico",
+	"mc" : "Bombilla de multiples colores",
+	"led" : "Led",
+	"i" : "Incandescente",
+	"h" : "Halógena",
+	"vsbp" : "Vapor de sodio de baja presión",
+	"fcbc" : "Fluorescente compacta de bajo consumo",
+	"hm" : "Halogenuro metálico",
+	"f" : "Fluorescente",
+	"default":"&lt;Desconocido&gt;"
+};
 var translateRadius={
 	"high":changeRadius["high"]+" metros",
 	"medium":changeRadius["medium"]+" metros",
@@ -74,13 +89,10 @@ var translateRadius={
 var heatmapLayerLow = null;
 var heatmapLayerMedium = null;
 var heatmapLayerHigh = null;
-var markerCluster = null;
-var markersForCluster = [];
-var finalClusterSize = -1;
 
-var heatMapGradientLow = ['rgba(0, 255, 255, 0)','#80cbc4','#4db6ac','#26a69a','#009688','#00897b','#00796b','#00695c','#004d40'];
-var heatMapGradientMedium = ['rgba(0, 255, 255, 0)','#fff59d','#fff176','#ffee58','#ffeb3b','#ffeb33','#ffe81a','#ffe600','#e6cf00'];
-var heatMapGradientHigh = ['rgba(0, 255, 255, 0)','#ffab91','#ff8a65','#ff7043','#ff5722','#f4511e','#e64a19','#d84315','#bf360c'];
+var heatMapGradientLow = ['rgba(255, 255, 255, 0)','#80cbc4','#4db6ac','#26a69a','#009688','#00897b','#00796b','#00695c','#004d40'];
+var heatMapGradientMedium = ['rgba(255, 255, 255, 0)','#fff59d','#fff176','#ffee58','#ffeb3b','#ffeb33','#ffe81a','#ffe600','#e6cf00'];
+var heatMapGradientHigh = ['rgba(255, 255, 255, 0)','#ffab91','#ff8a65','#ff7043','#ff5722','#f4511e','#e64a19','#d84315','#bf360c'];
 
 
 var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
@@ -329,9 +341,6 @@ function startWebPage(){
 				refreshLoadingTimeout=null;
 			}
 			if(lamppostMap.getZoom()>geometriesClusterZoom){
-				if(markerCluster){
-					markerCluster.clearMarkers();
-				}
 				refreshLoadingTimeout = window.setTimeout(function(){
 					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
 						showLoading();
@@ -349,31 +358,26 @@ function startWebPage(){
 		    		}
 		    		getAndDrawLampposts();
 		    	}, 200);
-			}
-			if(lastZoom>geometriesClusterZoom && lamppostMap.getZoom()<=geometriesClusterZoom){
-				if(markersForCluster.length>=finalClusterSize && finalClusterSize>=0){
-						removeNotVisibleGeometries(true, []);
+			}else{
+				if(poolingTimeout){
+	    			window.clearTimeout(poolingTimeout);
+	    			poolingTimeout = null;
+	    		}
+				refreshLoadingTimeout = window.setTimeout(function(){
+					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
 						showLoading();
-						markerCluster.addMarkers(markersForCluster);
-						closeLoading();
-						lastZoom=lamppostMap.getZoom();
-				}else{
-					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") 
-							&& jQuery("#specialForm").hasClass("notDisplay")){
-						showModalLoading();
-						var interval = window.setInterval(function(){
-							if(markersForCluster.length>=finalClusterSize && finalClusterSize>=0){
-								window.clearInterval(interval);
-								closeModalLoading();
-								removeNotVisibleGeometries(true, []);
-								showLoading();
-								markerCluster.addMarkers(markersForCluster);
-								closeLoading();
-								lastZoom=lamppostMap.getZoom();
-							}
-						},55);
+						isLoading=true;
 					}
-				}
+				},150);
+		    	refreshTimeout = window.setTimeout(function() {
+		    		if(refreshTimeout){
+		    			window.clearTimeout(refreshTimeout);
+		    			refreshTimeout = null;
+		    		}
+		    		removeNotVisibleGeometries(true, []);
+		    		lastZoom=lamppostMap.getZoom();
+		    		getAndDrawClusterGeometries();
+		    	}, 200);
 			}
 		}else{
 			showLoading();
@@ -396,14 +400,9 @@ function startWebPage(){
 	//showModalLoading();
 	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
 			function(data){
-				var startTime = new Date().getTime();
-				drawClusterGeometries(data['lampposts'])
-				//closeModalLoading();
-				var stopTime = new Date().getTime();
-				console.log("Timpo de procesamiento:"+((stopTime-startTime)/1000.0));
+				drawHeatMapGeometries(data['lampposts'])
 			}
 			,function(error){
-				finalClusterSize=0;
 				console.log("ERROR");
 				console.log(error);
 				closeModalLoading();
@@ -458,12 +457,6 @@ function getAndDrawLampposts(){
 	var long1=lamppostMap.getBounds().getSouthWest().lng();
 	var lat2=lamppostMap.getBounds().getNorthEast().lat();
 	var long2=lamppostMap.getBounds().getNorthEast().lng();
-	if(lamppostMap.getZoom()<=geometriesClusterZoom){
-		lat1=-90;
-		long1=-180;
-		lat2=90;
-		long2=180;
-	}
 	ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
 			function(data){
 				if(lamppostMap.getZoom()<=geometriesClusterZoom){
@@ -700,45 +693,74 @@ function drawGeometriesPending(geometries){
 	});
 }
 
-function drawClusterGeometries(geometries){
-	//var markers = [];
-	finalClusterSize = geometries.length;
-	var time = 0.7;
-	var startTime = new Date().getTime();
-	jQuery.each(geometries,function(i,geo){
-		window.setTimeout(function(){
-		var url = getImageColors['default']; 
-		if(geo["color"]!=null && getImageColors[geo["color"]]){
-			url = getImageColors[geo["color"]];
+function getAndDrawClusterGeometries(){
+	var lat1=lamppostMap.getBounds().getSouthWest().lat();
+	var long1=lamppostMap.getBounds().getSouthWest().lng();
+	var lat2=lamppostMap.getBounds().getNorthEast().lat();
+	var long2=lamppostMap.getBounds().getNorthEast().lng();
+	ajaxGet(serverURL+"cells",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
+			function(data){
+				removeNotVisibleGeometries(true,[]);
+				drawClusterGeometries(data['cells']);
+	    		if(isLoading){
+	    			closeLoading();
+	    		}
+	    		isLoading=false
+			},
+			function(error){
+				console.log("ERROR");
+				console.log(error);
+				swal('Server error','La llamada para obtener la agrupación de puntos ha fallado. Contacte con el Syte Admin','error');
+	    		if(isLoading){
+	    			closeLoading();
+	    		}
+	    		isLoading=false
+			});
+
+}
+
+
+function drawClusterGeometries(clusters){
+	console.log("Clusters lenght:"+clusters.length);
+	jQuery.each(clusters,function(i, cluster){
+		var url = 'resources/img/cluster/cluster1.png';
+		if(cluster["lampposts"]>1000){
+			url = 'resources/img/cluster/cluster3.png';
+		}else if(cluster["lampposts"]>500){
+			url = 'resources/img/cluster/cluster2.png';
 		}
 		var image = {
-		    url: url,
-		    // This marker is 10 pixels wide by 10 pixels high.
-		    scaledSize: new google.maps.Size(10, 10),
-		    // The origin for this image is (0, 0).
-		    origin: new google.maps.Point(0, 0),
-		    // The anchor for this image is the base of the flagpole at (0, 32).
-		    anchor: new google.maps.Point(5, 5)
-		};
-		var marker = new google.maps.Marker({
-		  	position: {lat: geo["latitude"], lng: geo["longitude"]},
-		  	map: null,
-		  	icon: image,
-		  	opacity:0.35
+			    url: url,
+			    // This marker is 10 pixels wide by 10 pixels high.
+			    //If you change this value remember change width in styles.css
+			    // and change labelAnchor for centered(in marker constructor)
+			    scaledSize: new google.maps.Size(80, 80),
+			    // The origin for this image is (0, 0).
+			    origin: new google.maps.Point(0, 0),
+			    // The anchor for this image is the base of the flagpole at (0, 32).
+			    anchor: new google.maps.Point(40, 40)
+			  };
+
+		var marker = new MarkerWithLabel({
+			  position: {lat: cluster["latitude"], lng: cluster["longitude"]},
+			  map: lamppostMap,
+			  icon: image,
+			  opacity:0.35,
+			  labelContent: ''+cluster["lampposts"]+'',
+		        labelAnchor: new google.maps.Point(40, 6),
+		        labelClass: "markerLabels" // the CSS class for the label
 		});
-		markersForCluster.push(marker);
-		if(i == geometries.length-1){
-			var stopTime = new Date().getTime();
-			console.log("Tiempo de procesamiento asíncrono:"+((stopTime-startTime)/1000.0));
-			console.log(markersForCluster.length);
-		}
-		},time);
-		time=time+0.7;
+
+		marker.addListener('click', function(ev){
+			lamppostMap.setCenter(marker.getPosition());
+			lamppostMap.setZoom(lamppostMap.getZoom()+2);
+		});
+		drewGeometries['cluster'+i] = marker;
 	});
-	var options = {imagePath: 'resources/img/cluster/cluster',maxZoom:geometriesClusterZoom};
-	markerCluster = new MarkerClusterer(lamppostMap, [], options);
-	//markersForCluster = markers;
-	
+}
+
+
+function drawHeatMapGeometries(geometries){
 	var heatMapDataLow = [];
 	var heatMapDataMedium = [];
 	var heatMapDataHigh = [];
@@ -747,41 +769,44 @@ function drawClusterGeometries(geometries){
 			if(geo['pollution'].toLowerCase() == 'high'){
 				heatMapDataHigh.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
 			}else if(geo['pollution'].toLowerCase() == 'medium'){
-				heatMapDataLow.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+				heatMapDataMedium.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
 			}else{
 				heatMapDataLow.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
 			}
 		}
 	});
+	console.log(heatMapDataLow.length);
+	console.log(heatMapDataMedium.length);
+	console.log(heatMapDataHigh.length);
 	//Low pollution heatmap
 	heatmapLayerLow = new google.maps.visualization.HeatmapLayer({
 	  	data: heatMapDataLow
 		});
 	heatmapLayerLow.setMap(pollutionMap);
-	heatmapLayerLow.set('opacity', 0.3);
+	heatmapLayerLow.set('opacity', 0.45);
 	heatmapLayerLow.set('gradient', heatMapGradientLow);
 	//Medium pollution heatmap
 	heatmapLayerMedium = new google.maps.visualization.HeatmapLayer({
 	  	data: heatMapDataMedium
 		});
 	heatmapLayerMedium.setMap(pollutionMap);
-	heatmapLayerMedium.set('opacity', 0.3);
+	heatmapLayerMedium.set('opacity', 0.45);
 	heatmapLayerMedium.set('gradient', heatMapGradientMedium);
 	//High pollution heatmap
 	heatmapLayerHigh = new google.maps.visualization.HeatmapLayer({
 	  	data: heatMapDataHigh
 		});
 	heatmapLayerHigh.setMap(pollutionMap);
-	heatmapLayerHigh.set('opacity', 0.3);
+	heatmapLayerHigh.set('opacity', 0.45);
 	heatmapLayerHigh.set('gradient', heatMapGradientHigh);
 }
 
 function addInfoWindow(marker,geo,map){
-	var color = translateLampColors['default'];
+	var tipoDeBombilla = translateLampType['default'];
 	var pollution = translatePollution['default'];
 	var radius = translateRadius['default'];
-	if(geo['color']!=null){
-		color = translateLampColors[geo['color']];
+	if(geo['lamp']!=null){
+		tipoDeBombilla = translateLampType[geo['lamp'].toLowerCase()];
 	}
 	if(geo['pollution']!=null){
 		pollution = translatePollution[geo['pollution']];
@@ -792,7 +817,7 @@ function addInfoWindow(marker,geo,map){
   var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
 '<span>Longitud: '+geo['longitude']+'</span><br>'+
 '<span>Radio de luz: '+radius+'</span><br>'+
-'<span>Color de bombilla: '+color+'</span><br>'+
+'<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>'+
 '<span>Contaminación lumínica: '+pollution+'</span><br>'+
 '<a style="color:blue;cursor:pointer" onclick="loadPostForm(\''+geo['id']+'\','+geo['latitude']+','+geo['longitude']+','+lamppostMap.getZoom()+',toggleFormContainer)">Anotar cambios</a>';
 

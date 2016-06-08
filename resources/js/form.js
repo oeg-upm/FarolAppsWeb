@@ -404,18 +404,6 @@ function updateForm(data) {
                         "high"
                     ]
                 },
-                "light": {
-                    "value": null,
-                    "range": [
-                        "P",
-                        "F",
-                        "E",
-                        "AA",
-                        "AC",
-                        "ER",
-                        "O"
-                    ]
-                },
                 "color": {
                     "value": "white",
                     "range": [
@@ -454,7 +442,7 @@ function updateForm(data) {
     jQuery.each(data,function(key,value){
         console.log(key);
         console.log(value);
-        if (key == "latitude" || key == "longitude" || key == "id" || key == "pollution") {
+        if (key == "latitude" || key == "longitude" || key == "id" || key == "pollution" || key == "light") {
         
         } else {
             if (key == "streetViewPov") {
@@ -631,6 +619,9 @@ function submitLampInfo() {
         }
         if (key == "streetViewPov") {
             formInfo[key] = currentStreetViewData;
+            continue;
+        }
+        if (key == 'light') {
             continue;
         }
         if (key == "id") {
@@ -949,7 +940,6 @@ var tradSpanish = {
     "wattage": "Voltaje",
     "lamp": "Bombilla",
     "height": "Altura",
-    "light": "Luz",
     "color": "Color",
     "covered": "Protección",
     "status": "Estado"

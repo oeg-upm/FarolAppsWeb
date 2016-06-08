@@ -524,6 +524,16 @@ div.dropClickMenu{
   animation: none !important;
 }
 
+.markerLabels {
+    color: white;
+    background-color: rgba(255,255,255,0);
+    font-family:"Lucida Grande", "Arial", sans-serif;
+    font-size: 10px;
+    width:80px;
+    text-align: center;
+    white-space: nowrap;
+}
+
 .flex-container-column{
     display: -ms-flexbox;
     display: -webkit-flex;
