@@ -73,7 +73,7 @@ var translateLampColors={
 };
 var translateLampType={
 	"vsap" : "Vapor de sódio de alta presión",
-	"vmcc" : "Vapor de mercurio colo corregido",
+	"vmcc" : "Vapor de mercurio color corregido",
 	"vmap" : "Vapor de mercurio de alta presión",
 	"par" : "Reflector parabólico",
 	"mc" : "Bombilla de multiples colores",
@@ -101,6 +101,7 @@ var heatMapGradientLow = ['rgba(255, 255, 255, 0)','#80cbc4','#4db6ac','#26a69a'
 var heatMapGradientMedium = ['rgba(255, 255, 255, 0)','#fff59d','#fff176','#ffee58','#ffeb3b','#ffeb33','#ffe81a','#ffe600','#e6cf00'];
 var heatMapGradientHigh = ['rgba(255, 255, 255, 0)','#ffab91','#ff8a65','#ff7043','#ff5722','#f4511e','#e64a19','#d84315','#bf360c'];
 
+var isHeatMapLoaded=false;
 
 var mapStyles=[{"elementType":"geometry.stroke","stylers":[{"visibility":"on"},{"lightness":-56}]},{"elementType":"labels.text","stylers":[{"visibility":"off"}]},{"elementType":"geometry.fill","stylers":[{"invert_lightness":true},{"lightness":-49}]},{featureType:"poi",stylers:[{visibility:"off"}]},{featureType:"transit",stylers:[{visibility:"off"}]}];
 var lamppostMap;
@@ -117,7 +118,7 @@ var lastZoom = 15;
 function showModalLoading(){
 	var imageHtml = "<img src='resources/img/loading.gif'></img>";//Necesitamos generar imagen de un loading (Esto seria el tag <img src="URL"></img>)
 	//var imageHtml = "";
-	swal({   title: "Agrupando farolas. Por favor espere.", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
+	swal({   title: "Creando el mapa de calor. Por favor espere.", text:imageHtml,showConfirmButton:false, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
 }
 
 function closeModalLoading(){
@@ -153,15 +154,16 @@ function closeMenu(){
 	}
 }
 
-var avatars = {
-	'cblanco': "resources/img/faces/cblanco.png",
-	'fran': "resources/img/faces/fran.png",
-	'fernando': "resources/img/faces/fernando.png",
-	'esteban': "resources/img/faces/esteban.png",
-	'cbadenes': "resources/img/faces/cbadenes.png",
-	'nandana': "resources/img/faces/nandana.png",
-}
 function showAboutUs(){
+	closeMenu();
+	var avatars = {
+			'cblanco': "resources/img/faces/cblanco.png",
+			'fran': "resources/img/faces/fran.png",
+			'fernando': "resources/img/faces/fernando.png",
+			'esteban': "resources/img/faces/esteban.png",
+			'cbadenes': "resources/img/faces/cbadenes.png",
+			'nandana': "resources/img/faces/nandana.png",
+		}
 	var html = "<div id='aboutContainer'>";
 	html += '<h3>Front-end</h3>';
 	html += '<div  class="aboutSubCont flex-container">';
@@ -172,14 +174,14 @@ function showAboutUs(){
 	html += '<div class="aboutSubCont flex-container">';
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Badenes</span><i class='vcardImage' style='background-image: url(" + avatars['cbadenes'] + ")'></i></div>";
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Fernando Serena</span><i class='vcardImage' style='background-image: url(" + avatars['fernando'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Esteban Gonz&iacutelez</span><i class='vcardImage' style='background-image: url(" + avatars['esteban'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Esteban Gonz&aacutelez</span><i class='vcardImage' style='background-image: url(" + avatars['esteban'] + ")'></i></div>";
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Nandana Mihindukulasooriya</span><i class='vcardImage' style='background-image: url(" + avatars['nandana'] + ")'></i></div>";
     html += '</div>';
     html += "<h3>Ontology Engineering Group</h3>";
     html += "<a href='http://www.oeg-upm.net/'>http://www.oeg-upm.net/</p><div></a><br>";
 	html += "<h3>Agradecimientos</h3>";
     html += "<a target='_blank' href='http://opendata.caceres.es/dataset/farolas-caceres'>Datos de alumbrado público de Cáceres facilitados por el Ayuntamiento de Cáceres en su portal de datos abiertos<a><br><br>";
-    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos sbiertos<a><br><br>";
+    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos abiertos<a><br><br>";
     html += "<a target='_blank' href='http://datos.madrid.es/sites/v/index.jsp?vgnextoid=930ebf3b03490510VgnVCM1000000b205a0aRCRD&vgnextchannel=20d612b9ace9f310VgnVCM100000171f5a0aRCRD'>Solicitud de datos de alumbrado público de Madrid (03/09/2015)<a><br><br>";
     html += "</div>";
     swal({
@@ -194,7 +196,7 @@ function showAboutUs(){
     	showCancelButton: false,
     	closeOnConfirm: false,
     	showLoaderOnConfirm: false
-    });
+    });	
 }
 
 /*Funcion que registra los eventos del menu superior y del menu lateral izquierdo*/
@@ -467,12 +469,19 @@ function startWebPage(){
 	//showModalLoading();
 	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
 			function(data){
-				drawHeatMapGeometries(data['lampposts'])
+				drawHeatMapGeometries(data['lampposts']);
+				if(!isHeatMapLoaded){
+					closeModalLoading();
+				}
+				isHeatMapLoaded=true;
 			}
 			,function(error){
 				console.log("ERROR");
 				console.log(error);
-				closeModalLoading();
+				if(!isHeatMapLoaded){
+					closeModalLoading();
+				}
+				isHeatMapLoaded=true;
 			});
 }
 
@@ -630,6 +639,9 @@ function showPollutionMap(){
 	jQuery("#lamppostMapContainer").addClass("notDisplay");
 	jQuery("#specialForm").addClass("notDisplay");*/
 	closeMenu();
+	if(!isHeatMapLoaded){
+		showModalLoading();
+	}
 	if(jQuery("#pollutionMapContainer").hasClass("notAnimationOnLoad")){
 		jQuery("#pollutionMapContainer").removeClass("notAnimationOnLoad");
 	}
@@ -755,12 +767,12 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 		}
 	});
 	if(overLimitHigh){		
-		lastWarning = "El límite de:"+geometriesLimitOnZoomHigh+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
+		lastWarning = "El límite de "+geometriesLimitOnZoomHigh+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
 		jQuery("#warningLamppost img").attr("alt",lastWarning);
 		jQuery("#warningLamppost").css("display","");
 	}
 	if(overLimitLow){
-		lastWarning = "El límite de:"+geometriesLimitOnZoomLow+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
+		lastWarning = "El límite de "+geometriesLimitOnZoomLow+" farolas ha sido excedido. Se han quedado farolas sin dibujar.";
 		jQuery("#warningLamppost img").attr("alt",lastWarning);
 		jQuery("#warningLamppost").css("display","");
 	}

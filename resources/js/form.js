@@ -957,7 +957,7 @@ function buildMap(lat, lng) {
 
 /* Traducción */
 var tradSpanish = {
-    "wattage": "Voltaje",
+    "wattage": "Potencia",
     "lamp": "Bombilla",
     "height": "Altura",
     "color": "Color",

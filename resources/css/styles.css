@@ -35,7 +35,7 @@ nav > div{
 }
 
 nav div {
-	z-index:100;
+	z-index:50;
 }
 
 nav div a{
@@ -217,10 +217,11 @@ nav div a:hover{
 		box-shadow:         0px 2px 1px 1px rgba(0, 0, 0, 0.4);
     	background:rgba(40, 40, 40,1);
     	position:absolute;
-    	width:114%;
-    	margin-top:7px;
+    	min-width:114%;
     	padding-right: 22px;
-    	width: auto
+    	width: auto;
+		left: 0px;
+    	margin-top: 6px;
 	}
 	.navDropDownItem div{
 		padding: 5px 5px 5px 5px;
