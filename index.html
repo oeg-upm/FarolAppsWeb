@@ -44,6 +44,15 @@
 				<nav class='navMenu flex-item-main maxCrossAxisFlexSize mainAxisFlexCenter crossAxisFlexCenter notActivateResponsive'>
 					<div class='gDesignButton' onclick='showLamppostMap()'><a>Mapa de farolas</a></div>
 					<div class='gDesignButton' onclick='showPollutionMap()'><a>Mapa de contaminación lumínica</a></div>
+					<div class='gDesignButton navDropDownContainer notActivateResponsive'>
+						<div class='flex-container-row crossAxisFlexCenter navDropDownClick'>
+							<a>Regiones</a>
+							<img class='dropDownImage' src='resources/img/dropdown.png' alt='DropDown menu image'>
+							<img class='dropUpImage' src='resources/img/dropup.png' alt='DropUp menu image'>
+						</div>
+						<div id='regionesMenu' class='navDropDownItem'>
+						</div>
+					</div>
 					<div class='gDesignButton' onclick='showAboutUs()'><a>Acerca de</a></div>
 				</nav>
 				<div class='flex-item Logo removeOnTabletOrMobile'><img src="resources/img/OEG_Logo.png" alt="OEG Logo" class='Logo'></img></div>

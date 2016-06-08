@@ -153,48 +153,24 @@ function closeMenu(){
 	}
 }
 
-var avatars = {
-	'cblanco': "resources/img/faces/cblanco.png",
-	'fran': "resources/img/faces/fran.png",
-	'fernando': "resources/img/faces/fernando.png",
-	'esteban': "resources/img/faces/esteban.png",
-	'cbadenes': "resources/img/faces/cbadenes.png",
-	'nandana': "resources/img/faces/nandana.png",
-}
 function showAboutUs(){
-	var html = "<div id='aboutContainer'>";
-	html += '<h3>Front-end</h3>';
-	html += '<div  class="aboutSubCont flex-container">';
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Francisco Siles</span><i class='vcardImage' style='background-image: url(" + avatars['fran'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Blanco</span><i class='vcardImage' style='background-image: url(" + avatars['cblanco'] + ")'></i></div>";
-    html += '</div>';
-    html += "<h3>Back-end</h3>";
-	html += '<div class="aboutSubCont flex-container">';
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Badenes</span><i class='vcardImage' style='background-image: url(" + avatars['cbadenes'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Fernando Serena</span><i class='vcardImage' style='background-image: url(" + avatars['fernando'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Esteban Gonz&iacutelez</span><i class='vcardImage' style='background-image: url(" + avatars['esteban'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Nandana Mihindukulasooriya</span><i class='vcardImage' style='background-image: url(" + avatars['nandana'] + ")'></i></div>";
-    html += '</div>';
-    html += "<h3>Ontology Engineering Group</h3>";
-    html += "<a href='http://www.oeg-upm.net/'>http://www.oeg-upm.net/</p><div></a><br>";
-	html += "<h3>Agradecimientos</h3>";
-    html += "<a target='_blank' href='http://opendata.caceres.es/dataset/farolas-caceres'>Datos de alumbrado público de Cáceres facilitados por el Ayuntamiento de Cáceres en su portal de datos abiertos<a><br><br>";
-    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos sbiertos<a><br><br>";
-    html += "<a target='_blank' href='http://datos.madrid.es/sites/v/index.jsp?vgnextoid=930ebf3b03490510VgnVCM1000000b205a0aRCRD&vgnextchannel=20d612b9ace9f310VgnVCM100000171f5a0aRCRD'>Solicitud de datos de alumbrado público de Madrid (03/09/2015)<a><br><br>";
-    html += "</div>";
-    swal({
-    	title: "Acerca de Farolapp4All",
-    	customClass: 'aboutSweetAlert',
-    	text:html,
-    	allowEscapeKey:true,
-    	allowOutsideClick:true,
-    	html:true,
-    	type: null,
-    	showConfirmButton:false,
-    	showCancelButton: false,
-    	closeOnConfirm: false,
-    	showLoaderOnConfirm: false
-    });
+	closeMenu();
+	var width = (jQuery(window).width()*85.0)/100.0;
+	var height = (jQuery(window).height()*60.0)/100.0;
+	var html = "<div style='text-align:left;overflow-y:auto;max-height:"+height+"px;max-width:"+width+"px'>";
+	html+= '<p>Web design/javascript by:</p><br>';
+    html += "<p style='margin-left:12px;'>Francisco Siles</p><br>";
+    html += "<p style='margin-left:12px;'>Carlos Blanco</p><br>";
+    html += "<br>";
+    html += "<p>Developed by:</p><br>";
+    html += "<p style='margin-left:12px;'>Carlos Badenes</p><br>";
+    html += "<p style='margin-left:12px;'>Fernando Serena</p><br>";
+    html += "<p style='margin-left:12px;'>Esteban Gonz&iacutelez</p><br>";
+    html += "<p style='margin-left:12px;'>Nandana</p><br>";
+    html += "<br>";
+    html += "<p>Ontology Engineering Group</p><br>";
+    html += "<p style='margin-left:12px;'>oeg-upm.net</p><br></div>";
+    swal({   title: "Acerca de", text:html,showConfirmButton:true, allowEscapeKey:false,html:true,   type: null,   showCancelButton: false,   closeOnConfirm: false,   showLoaderOnConfirm: false, });
 }
 
 /*Funcion que registra los eventos del menu superior y del menu lateral izquierdo*/

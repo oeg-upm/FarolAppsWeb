@@ -340,6 +340,7 @@ function updateStreetView(lat, lng, heading, pitch) {
 function updateFormMap(lat, lng, zoom, isNew) {
     console.log("updating Form Map");
     moveMapToLocation(formMap.map, lat, lng);
+    formMap.map.setZoom(zoom);
     if (!isNew) {
         if (!currentFormMarker) {
             var pos = new google.maps.LatLng(lat, lng);

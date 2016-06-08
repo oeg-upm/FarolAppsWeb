@@ -218,6 +218,9 @@ nav div a:hover{
     	background:rgba(40, 40, 40,1);
     	position:absolute;
     	width:114%;
+    	margin-top:7px;
+    	padding-right: 22px;
+    	width: auto
 	}
 	.navDropDownItem div{
 		padding: 5px 5px 5px 5px;
@@ -532,6 +535,10 @@ div.dropClickMenu{
     width:80px;
     text-align: center;
     white-space: nowrap;
+}
+
+#regionesMenu{
+	overflow-y:auto;
 }
 
 .flex-container-column{
