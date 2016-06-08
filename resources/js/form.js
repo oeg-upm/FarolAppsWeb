@@ -13,6 +13,7 @@ var isNewLamppost;
 var isTempLamppost;
 var panorama;
 var formCallback;
+var farolaMarker = "resources/img/markers/farola_ico2.png";
 
 
 function loadPostForm(id, lat, lng, theZoom, callback) {
@@ -46,13 +47,26 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
         firstLoad = false;
         callback();
     } else {
-        if (!isTempLamppost) {
+        if (!isNewLamppost && !isTempLamppost) {
             getLampInfo();
+            // Optimization... maybe unnecessary. true indicates that no new marker is needed in form map
+            updateMaps(lat, lng, currentlamppostZoom, null, null, true);
+        } 
+        else {
+            if (isNewLamppost) {
+                updateMaps(lat, lng, currentlamppostZoom, null, null, true);
+            } else {
+                // Temp lamppost load marker using lat lng parameters 
+                updateMaps(lat, lng, currentlamppostZoom, null, null, false);
+            }
+            
         }
-        updateMaps(lat, lng, currentlamppostZoom, 0, 0, true);
         openEmptyForm(id, lat, lng, currentlamppostZoom);
         callback();
     }
+    setTimeout(function() {
+        $("#specialForm").scrollTop(0);
+    },600);
     function getLampInfo() {
         $.ajax({
             type: "GET",
@@ -329,7 +343,7 @@ function updateFormMap(lat, lng, zoom, isNew) {
     if (!isNew) {
         if (!currentFormMarker) {
             var pos = new google.maps.LatLng(lat, lng);
-            createDraggedMarker(pos, "resources/img/markers/farola_ico2.png", true); // true is for not draggable marker
+            createDraggedMarker(pos, farolaMarker, true); // true is for not draggable marker
         } else {
             moveMarkerToLocation(currentFormMarker, lat, lng);
         }
@@ -440,8 +454,6 @@ function updateForm(data) {
     console.log(data)
     // Generate Dynamic Form
     jQuery.each(data,function(key,value){
-        console.log(key);
-        console.log(value);
         if (key == "latitude" || key == "longitude" || key == "id" || key == "pollution" || key == "light") {
         
         } else {
@@ -450,7 +462,6 @@ function updateForm(data) {
                     'heading': data[key].heading,
                     'pitch': data[key].pitch
                 }
-                //updateMaps();
             } else {
                 var imageOptions = {};
                 data[key].range.map(function(option) {
@@ -532,7 +543,6 @@ function switchRow(e) {
             return;
         }
     }
-    console.log(e);
     $(el).addClass('active');
     currentRowSelected = $(el);
 };
@@ -803,7 +813,10 @@ function createDraggedMarker(d, e, notDrag) {
         h.setZIndex(highestOrder())
     })
     currentFormMarker = h;
-    updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), 0, 0);
+    // Updating panorama view with the new marker
+    if (panorama) {
+        updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), 0, 0);
+    }
     google.maps.event.addListener(currentFormMarker,'dragend',function(event) {
         console.log('Drag end');
         updateStreetView(this.position.lat(), this.position.lng(), 0, 0);
@@ -933,6 +946,12 @@ function buildMap(lat, lng) {
     }
     dummy = new DummyOView();
     formMap = dummy;
+
+    var pos = new google.maps.LatLng(lat, lng);
+    if (!isNewLamppost) {
+        createDraggedMarker(pos, farolaMarker, true); // true is for not draggable marker
+    }
+    
 }
 
 /* Traducción */
