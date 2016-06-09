@@ -13,11 +13,13 @@ var regions={
 
 var drewGeometries={};
 var drewGeometriesPending={};
+var drewGeometriesPollution={};
 var geometriesLimitOnZoomHigh=3000;
 var geometriesLimitOnZoomLow=300;
 var geometriesChangeOnZoom=19;
 var geometriesClusterZoom=16;
 var isClusteringLoading=false;
+var lastDrawID=0;
 var changeFillColors={
 	"red":"#D80027",
 	"orange":"#E38F22",
@@ -110,8 +112,13 @@ var refreshTimeout=null;
 var ajaxRefresh=null;
 var refreshLoadingTimeout=null;
 var refreshClusteringTimeout=null;
+var refreshPollutionTimeout=null;
+var refreshTimeMili=1000;
 var ajaxRefreshClustering=null;
-var poolingTimeout=null;
+var poolingTimeout = null;
+var poolingPendingsTimeout = null;
+var poolingPollutionTimeout = null;
+var timeStartPollution = null;
 var firtsStart=true;
 var lastZoom = 15;
 
@@ -358,10 +365,14 @@ function startWebPage(){
 		var newHeihgt = jQuery(window).height()-350+80;
 		jQuery('#regionesMenu').css('max-height',newHeihgt);
 		});
+	heatmapLayerLow = new google.maps.visualization.HeatmapLayer();
+	heatmapLayerMedium = new google.maps.visualization.HeatmapLayer();
+	heatmapLayerHigh = new google.maps.visualization.HeatmapLayer();
 	if(window.mobileAndTabletcheck()){
 		geometriesLimitOnZoomHigh=300;
 		geometriesLimitOnZoomLow=50;
 		geometriesChangeOnZoom=20;
+		geometriesClusterZoom=17;
 	}
 	lamppostMap = new google.maps.Map(document.getElementById('lamppostMapContainer'), {
 		//center: {lat: 40.4171, lng: -3.7031},
@@ -389,6 +400,18 @@ function startWebPage(){
 			ajaxRefreshClustering.abort();
 			ajaxRefreshClustering = null;
 		}
+		if(refreshTimeout){
+			window.clearTimeout(refreshTimeout);
+			refreshTimeout = null;
+		}
+		if(refreshLoadingTimeout){
+			window.clearTimeout(refreshLoadingTimeout);
+			refreshLoadingTimeout=null;
+		}
+		if(refreshClusteringTimeout){
+			window.clearTimeout(refreshClusteringTimeout);
+			refreshClusteringTimeout = null;
+		}
 		if(jQuery('#specialForm').hasClass('notDisplay')){
 		if(!firtsStart){
 			jQuery("#warningLamppost").css("display","none");
@@ -397,70 +420,55 @@ function startWebPage(){
 			}else{
 				jQuery('#addLamppost').css('display','none')
 			}
-			if(refreshTimeout){
-    			window.clearTimeout(refreshTimeout);
-    			refreshTimeout = null;
-    		}
-			if(refreshLoadingTimeout){
-				window.clearTimeout(refreshLoadingTimeout);
-				refreshLoadingTimeout=null;
-			}
+			
 			if(lamppostMap.getZoom()>geometriesClusterZoom){
 				refreshLoadingTimeout = window.setTimeout(function(){
 					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
 						showLoading();
 						isLoading=true;
 					}
-				},150);
-				if(refreshTimeout){
-	    			window.clearTimeout(refreshTimeout);
-	    			refreshTimeout = null;
-	    		}
+				},refreshTimeMili-50);
 		    	refreshTimeout = window.setTimeout(function() {
-		    		if(refreshTimeout){
-		    			window.clearTimeout(refreshTimeout);
-		    			refreshTimeout = null;
-		    		}
+		    		lastDrawID = new Date().getTime();
 		    		if(poolingTimeout){
 		    			window.clearTimeout(poolingTimeout);
 		    			poolingTimeout = null;
 		    		}
-		    		getAndDrawLampposts();
-		    	}, 200);
+		    		if(poolingPendingsTimeout){
+		    			window.clearTimeout(poolingPendingsTimeout);
+		    			poolingPendingsTimeout=null;
+		    		}
+		    		getAndDrawLampposts(lastDrawID);
+		    	}, refreshTimeMili);
 			}else{
-				if(refreshClusteringTimeout){
-	    			window.clearTimeout(refreshClusteringTimeout);
-	    			refreshClusteringTimeout = null;
-	    		}
-				if(refreshTimeout){
-	    			window.clearTimeout(refreshTimeout);
-	    			refreshTimeout = null;
-	    			isClusteringLoading=true;
-	    		}
 				if(poolingTimeout){
 	    			window.clearTimeout(poolingTimeout);
 	    			poolingTimeout = null;
+	    		}
+				if(poolingPendingsTimeout){
+	    			window.clearTimeout(poolingPendingsTimeout);
+	    			poolingPendingsTimeout=null;
 	    		}
 				refreshLoadingTimeout = window.setTimeout(function(){
 					if(jQuery("#lamppostMapContainer").hasClass("animationEnter") && jQuery("#specialForm").hasClass("notDisplay")){
 						showLoading();
 						isLoading=true;
 					}
-				},150);
+				},refreshTimeMili-50);
 				refreshClusteringTimeout = window.setTimeout(function() {
 					isClusteringLoading=true;
-		    		if(refreshClusteringTimeout){
-		    			window.clearTimeout(refreshClusteringTimeout);
-		    			refreshClusteringTimeout = null;
-		    		}
 		    		lastZoom=lamppostMap.getZoom();
 		    		getAndDrawClusterGeometries();
-		    	}, 200);
+		    	}, refreshTimeMili);
 			}
 		}else{
 			showLoading();
 			isLoading=true;
-			getAndDrawLampposts();
+			if(lamppostMap.getZoom > geometriesClusterZoom){
+				getAndDrawLampposts();
+			}else{
+				getAndDrawClusterGeometries();
+			}
 			firtsStart=false;
 		}
 		if(jQuery("#lamppostMapContainer").hasClass("animationEnter")){
@@ -473,11 +481,27 @@ function startWebPage(){
 		if(jQuery("#pollutionMapContainer").hasClass("animationEnter")){
 			lamppostMap.setCenter(pollutionMap.getCenter());
 			lamppostMap.setZoom(pollutionMap.getZoom());
+			
+			if(refreshPollutionTimeout){
+				window.clearTimeout(refreshPollutionTimeout);
+				refreshPollutionTimeout=null;
+			}
+			showLoading();
+			isLoading=true;
+			refreshPollutionTimeout = window.setTimeout(function() {
+			if(jQuery("#pollutionMapContainer").hasClass("animationEnter")){
+				drawHeatMapGeometries(drewGeometriesPollution);
+				if(isLoading){
+	    			closeLoading();
+	    		}
+	    		isLoading=false
+			}},refreshTimeMili);
 		}
 	});
 	//showModalLoading();
 	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
 			function(data){
+				timeStartPollution = new Date().getTime();
 				drawHeatMapGeometries(data['lampposts']);
 				if(!isHeatMapLoaded){
 					closeModalLoading();
@@ -537,7 +561,7 @@ function removeNotVisibleGeometries(all,data){
 	}
 }
 
-function getAndDrawLampposts(){
+function getAndDrawLampposts(actualDrawID){
 	var lat1=lamppostMap.getBounds().getSouthWest().lat();
 	var long1=lamppostMap.getBounds().getSouthWest().lng();
 	var lat2=lamppostMap.getBounds().getNorthEast().lat();
@@ -555,7 +579,7 @@ function getAndDrawLampposts(){
 				}
 				lastZoom = lamppostMap.getZoom();
 				if(lamppostMap.getZoom()>geometriesClusterZoom){
-					drawGeometries(data['lampposts']);
+					drawGeometries(data['lampposts'],false,actualDrawID);
 				}
 				poolingNewData(true);
 	    		if(isLoading){
@@ -576,33 +600,33 @@ function getAndDrawLampposts(){
 	    		isLoading=false
 	    		ajaxRefresh=null;
 			});
-	if(drewGeometriesPending){
-		jQuery.each(drewGeometriesPending,function(id,marker){
-			marker.setMap(null);
-		});
-	}
-	drewGeometriesPending = {};
 	if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
 		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"verified":"FALSE"},
 				function(data){
-					drawGeometriesPending(data['lampposts']);
+					drawGeometriesPending(data['lampposts'],true);
 				},
 				function(error){
 					console.log("ERROR");
 					console.log(error);
 					drawGeometriesPending(randomGeometries.randomConsensusGeometries(lamppostMap.getBounds()));
 				});
+	}else{
+		if(drewGeometriesPending){
+			jQuery.each(drewGeometriesPending,function(id,marker){
+				marker.setMap(null);
+			});
+		}
+		drewGeometriesPending = {};
 	}
 }
 
 function poolingNewData(start){
-	poolingTimeout = window.setTimeout(poolingNewData,10000);
 	if(!start){
 		var lat1=lamppostMap.getBounds().getSouthWest().lat();
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
 		var lat2=lamppostMap.getBounds().getNorthEast().lat();
 		var long2=lamppostMap.getBounds().getNorthEast().lng();
-		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"2s"},
+		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s"},
 			function(data){
 			changeData(data['lampposts']);
 		},
@@ -611,6 +635,83 @@ function poolingNewData(start){
 			//console.log(error);
 		});
 	}
+	poolingTimeout = window.setTimeout(poolingNewData,5000);
+}
+
+function poolingPollution(start){
+	var time = 5;
+	if(timeStartPollution){
+		var newTime = time+((new Date().getTime() - timeStartPollution)/1000.0);
+		newTime+1;
+		time = Math.floor(newTime);
+		timeStartPollution=null;
+	}
+	var lat1=-90;
+	var long1=-180;
+	var lat2=90;
+	var long2=180;
+	ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":time+"s"},
+		function(data){
+			var changesOnLow = false;
+			var changesOnMedium = false;
+			var changesOnHigh = false;
+			jQuery.each(data['lampposts'],function(i,geo){
+				if(geo['pollution'] != null){
+					var lat = geo['latitude'];
+					var lng = geo['longitude'];
+					var toPush = {};
+					var index = -1;
+					if(drewGeometriesPollution[geo['id']] && drewGeometriesPollution[geo['id']]['data']){
+						var toSearch = drewGeometriesPollution[geo['id']]['data'];
+						index = drewGeometriesPollution[geo['id']]['layer'].getData().indexOf(toSearch);
+						if(index>=0){
+							var layer = drewGeometriesPollution[geo['id']]['layer'];
+							layer.getData().removeAt(index);
+							delete drewGeometriesPollution[geo['id']];
+						}
+					}
+					if(geo['pollution'].toLowerCase() == 'high'){
+						toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+						drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerHigh,'data':toPush};
+					}else if(geo['pollution'].toLowerCase() == 'medium'){
+						toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+						drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerMedium,'data':toPush};
+					}else{
+						toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+						drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerLow,'data':toPush};
+					}
+					if(lat && lng 
+							&& lat>=pollutionMap.getBounds().getSouthWest().lat()
+							&& lat<=pollutionMap.getBounds().getNorthEast().lat()
+							&& lng>=pollutionMap.getBounds().getSouthWest().lng()
+							&& lng<=pollutionMap.getBounds().getNorthEast().lng()){
+						drewGeometriesPollution[geo['id']]['layer'].getData().push(toPush);
+					}
+				}
+			});
+		},
+		function(error){
+			console.log(error);
+		});
+	poolingPollutionTimeout = window.setTimeout(poolingPollution,5000);
+}
+
+function poolingNewPendings(start){
+	if(!start){
+		var lat1=lamppostMap.getBounds().getSouthWest().lat();
+		var long1=lamppostMap.getBounds().getSouthWest().lng();
+		var lat2=lamppostMap.getBounds().getNorthEast().lat();
+		var long2=lamppostMap.getBounds().getNorthEast().lng();
+		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s","verified":"FALSE"},
+			function(data){
+			drawGeometriesPending(data['lampposts']);
+		},
+		function(error){
+			drawGeometriesPending(randomGeometries.randomConsensusGeometries(lamppostMap.getBounds()));
+			//console.log(error);
+		});
+	}
+	poolingPendingsTimeout = window.setTimeout(poolingNewPendings,5000);
 }
 
 function changeData(data){
@@ -627,6 +728,8 @@ function showRegion(name){
 	if(regions[name] && regions[name]['center'] && regions[name]['zoom']){
 		lamppostMap.setCenter(regions[name]['center']);
 		lamppostMap.setZoom(regions[name]['zoom']);
+		pollutionMap.setCenter(regions[name]['center']);
+		pollutionMap.setZoom(regions[name]['zoom']);
 	}
 }
 
@@ -635,6 +738,11 @@ function showLamppostMap(){
 	jQuery("#pollutionMapContainer").addClass("notDisplay");
 	jQuery("#specialForm").addClass("notDisplay");*/
 	closeMenu();
+	window.clearTimeout(poolingPollutionTimeout);
+	poolingPollutionTimeout=null;
+	if(jQuery("#pollutionMapContainer").hasClass("animationEnter")){
+		timeStartPollution = new Date().getTime();
+	}
 	jQuery("#lamppostMapContainer").removeClass("animationOut");
 	jQuery("#lamppostMapContainer").addClass("animationEnter");
 	jQuery("#pollutionMapContainer").removeClass("animationEnter");
@@ -647,6 +755,10 @@ function showPollutionMap(){
 	/*jQuery("#pollutionMapContainer").removeClass("notDisplay");
 	jQuery("#lamppostMapContainer").addClass("notDisplay");
 	jQuery("#specialForm").addClass("notDisplay");*/
+	window.setTimeout(function(){
+		drawHeatMapGeometries(drewGeometriesPollution);
+	},30);
+	poolingPollution(true);
 	closeMenu();
 	if(!isHeatMapLoaded){
 		showModalLoading();
@@ -721,7 +833,7 @@ function drawGeometry(geo){
 	}
 }
 
-function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
+function drawGeometries(geometries,onlyLamppostUpdate,actualDrawID){
 	var overLimitHigh = false;
 	var overLimitLow = false;
 	var count=0;
@@ -736,7 +848,7 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 				if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
 					if(count<geometriesLimitOnZoomLow){
 						var timeout = window.setTimeout(function() {
-							if(!isClusteringLoading){
+							if(!isClusteringLoading && (actualDrawID == lastDrawID || !actualDrawID)){
 								drawGeometry(geo);
 							}else{
 								while(timeouts.length>0){
@@ -752,7 +864,7 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 				}else{
 					if(count<geometriesLimitOnZoomHigh){
 						var timeout = window.setTimeout(function() {
-							if(!isClusteringLoading){
+							if(!isClusteringLoading && (actualDrawID == lastDrawID || !actualDrawID)){
 								drawGeometry(geo);
 							}else{
 								while(timeouts.length>0){
@@ -769,10 +881,11 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 				count++;
 			}
 		}else{
-			window.setTimeout(function() {
+			/*window.setTimeout(function() {
 				drawGeometry(geo);
 			}, timeNumber);
-			timeNumber++;
+			timeNumber++;*/
+			drawGeometry(geo);
 		}
 	});
 	if(overLimitHigh){		
@@ -787,24 +900,39 @@ function drawGeometries(geometries,onlyLamppostUpdate,onlyPollutionUpdate){
 	}
 }
 
-function drawGeometriesPending(geometries){
-	jQuery.each(geometries,function(i,geo){
-		var url = 'resources/img/markers/questionMark.png'; 
-		var image = {
-				url: url,
-				scaledSize: new google.maps.Size(32, 32),
-				origin: new google.maps.Point(0, 0),
-				anchor: new google.maps.Point(16, 32)
-		  	};
-		var marker = new google.maps.Marker({
-			position: {lat: geo["latitude"], lng: geo["longitude"]},
-			map: lamppostMap,
-			icon: image,
-			opacity:0.35
-		});
-		addInfoWindow(marker, geo,lamppostMap);
-		drewGeometriesPending[geo["id"]] = marker;
+function drawGeometriesPending(geometries,runPooling){
+	var toRemove = [];
+	jQuery.each(drewGeometriesPending,function(id,geo){
+		if(!existsTheIdInArray(id, geometries)){
+			toRemove.push(id);
+		}
 	});
+	jQuery.each(toRemove,function(i,id){
+		drewGeometriesPending[id].setMap(null);
+		delete drewGeometriesPending[id];
+	});
+	jQuery.each(geometries,function(i,geo){
+		if(!drewGeometriesPending[geo['id']]){
+			var url = 'resources/img/markers/questionMark.png'; 
+			var image = {
+					url: url,
+					scaledSize: new google.maps.Size(32, 32),
+					origin: new google.maps.Point(0, 0),
+					anchor: new google.maps.Point(16, 32)
+		  		};
+			var marker = new google.maps.Marker({
+				position: {lat: geo["latitude"], lng: geo["longitude"]},
+				map: lamppostMap,
+				icon: image,
+				opacity:0.35
+			});
+			addInfoWindow(marker, geo,lamppostMap);
+			drewGeometriesPending[geo["id"]] = marker;
+		}
+	});
+	if(runPooling){
+		poolingNewPendings(true);
+	}
 }
 
 function getAndDrawClusterGeometries(){
@@ -878,41 +1006,59 @@ function drawClusterGeometries(clusters){
 
 
 function drawHeatMapGeometries(geometries){
-	var heatMapDataLow = [];
-	var heatMapDataMedium = [];
-	var heatMapDataHigh = [];
 	jQuery.each(geometries,function(i,geo){
 		if(geo['pollution'] != null){
-			if(geo['pollution'].toLowerCase() == 'high'){
-				heatMapDataHigh.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
-			}else if(geo['pollution'].toLowerCase() == 'medium'){
-				heatMapDataMedium.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+			var lat = geo['latitude'];
+			var lng = geo['longitude'];
+			var toPush = {};
+			if(!drewGeometriesPollution[geo['id']]){
+				if(geo['pollution'].toLowerCase() == 'high'){
+					toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+					drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerHigh,'data':toPush};
+				}else if(geo['pollution'].toLowerCase() == 'medium'){
+					toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+					drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerMedium,'data':toPush};
+				}else{
+					toPush = {'location': new google.maps.LatLng(lat, lng), weight: changeWeight[geo["pollution"]]};
+					drewGeometriesPollution[geo['id']] = {'id':geo['id'],'pollution':geo['pollution'],'latitude':geo['latitude'],'longitude':geo['longitude'],'layer':heatmapLayerLow,'data':toPush};
+				}
 			}else{
-				heatMapDataLow.push({location: new google.maps.LatLng(geo["latitude"], geo["longitude"]), weight: changeWeight[geo["pollution"]]});
+				toPush = drewGeometriesPollution[geo['id']]['data'];
+			}
+			var index = drewGeometriesPollution[geo['id']]['layer'].getData().indexOf(toPush);
+			if(lat && lng 
+					&& lat>=pollutionMap.getBounds().getSouthWest().lat()
+					&& lat<=pollutionMap.getBounds().getNorthEast().lat()
+					&& lng>=pollutionMap.getBounds().getSouthWest().lng()
+					&& lng<=pollutionMap.getBounds().getNorthEast().lng()
+					&& index<0/*not exists*/){
+				drewGeometriesPollution[geo['id']]['layer'].getData().push(toPush);
+			}else{
+				if(index>=0 &&
+						!(lat>=pollutionMap.getBounds().getSouthWest().lat()
+						&& lat<=pollutionMap.getBounds().getNorthEast().lat()
+						&& lng>=pollutionMap.getBounds().getSouthWest().lng()
+						&& lng<=pollutionMap.getBounds().getNorthEast().lng())){
+					var layer = drewGeometriesPollution[geo['id']]['layer'];
+					layer.getData().removeAt(index);
+				}
 			}
 		}
 	});
-	//Low pollution heatmap
-	heatmapLayerLow = new google.maps.visualization.HeatmapLayer({
-	  	data: heatMapDataLow
-		});
-	heatmapLayerLow.setMap(pollutionMap);
-	heatmapLayerLow.set('opacity', 0.45);
-	heatmapLayerLow.set('gradient', heatMapGradientLow);
-	//Medium pollution heatmap
-	heatmapLayerMedium = new google.maps.visualization.HeatmapLayer({
-	  	data: heatMapDataMedium
-		});
-	heatmapLayerMedium.setMap(pollutionMap);
-	heatmapLayerMedium.set('opacity', 0.45);
-	heatmapLayerMedium.set('gradient', heatMapGradientMedium);
-	//High pollution heatmap
-	heatmapLayerHigh = new google.maps.visualization.HeatmapLayer({
-	  	data: heatMapDataHigh
-		});
-	heatmapLayerHigh.setMap(pollutionMap);
-	heatmapLayerHigh.set('opacity', 0.45);
-	heatmapLayerHigh.set('gradient', heatMapGradientHigh);
+	if(!isHeatMapLoaded){
+		//Low pollution heatmap
+		heatmapLayerLow.setMap(pollutionMap);
+		heatmapLayerLow.set('opacity', 0.45);
+		heatmapLayerLow.set('gradient', heatMapGradientLow);
+		//Medium pollution heatmap
+		heatmapLayerMedium.setMap(pollutionMap);
+		heatmapLayerMedium.set('opacity', 0.45);
+		heatmapLayerMedium.set('gradient', heatMapGradientMedium);
+		//High pollution heatmap
+		heatmapLayerHigh.setMap(pollutionMap);
+		heatmapLayerHigh.set('opacity', 0.45);
+		heatmapLayerHigh.set('gradient', heatMapGradientHigh);
+	}
 }
 
 function addInfoWindow(marker,geo,map){
@@ -930,7 +1076,6 @@ function addInfoWindow(marker,geo,map){
 	}
   var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
 '<span>Longitud: '+geo['longitude']+'</span><br>'+
-'<span>Id: '+geo['id']+'</span><br>'+
 '<span>Radio de luz: '+radius+'</span><br>'+
 '<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>'+
 '<span>Contaminación lumínica: '+pollution+'</span><br>'+
