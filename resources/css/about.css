@@ -60,6 +60,13 @@
 
 .vcardName {
 	display: block;
+	text-align: center;
+}
+
+.Mihindukulasooriya {
+    margin-top: -12px;
+    width: 153px;
+    margin-right: -21px;
 }
 
 .vcardImage {
@@ -74,4 +81,13 @@
 .aboutLink {
 	cursor: pointer;
 	text-decoration: 
+}
+
+#oegAboutLogo {
+    height: 60px;
+    background-image: url('../img/OEG_Logo.png');
+    width: 100px;
+    display: inline-block;
+    background-size: contain;
+    box-shadow: 1px 1px 3px 2px #CACACA;
 }

@@ -175,14 +175,23 @@ function showAboutUs(){
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Carlos Badenes</span><i class='vcardImage' style='background-image: url(" + avatars['cbadenes'] + ")'></i></div>";
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Fernando Serena</span><i class='vcardImage' style='background-image: url(" + avatars['fernando'] + ")'></i></div>";
     html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Esteban Gonz&aacutelez</span><i class='vcardImage' style='background-image: url(" + avatars['esteban'] + ")'></i></div>";
-    html += "<div class='aboutVcard form_flex-item'><span class='vcardName'>Nandana Mihindukulasooriya</span><i class='vcardImage' style='background-image: url(" + avatars['nandana'] + ")'></i></div>";
+    html += "<div class='aboutVcard form_flex-item'><span class='vcardName Mihindukulasooriya'>Nandana Mihindukulasooriya</span><i class='vcardImage' style='background-image: url(" + avatars['nandana'] + ")'></i></div>";
     html += '</div>';
     html += "<h3>Ontology Engineering Group</h3>";
-    html += "<a href='http://www.oeg-upm.net/'>http://www.oeg-upm.net/</p><div></a><br>";
+    html += "<a target='_blank' id='oegAboutLogo'href='http://www.oeg-upm.net/'></a><br><br><br>";
 	html += "<h3>Agradecimientos</h3>";
-    html += "<a target='_blank' href='http://opendata.caceres.es/dataset/farolas-caceres'>Datos de alumbrado público de Cáceres facilitados por el Ayuntamiento de Cáceres en su portal de datos abiertos<a><br><br>";
-    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos abiertos<a><br><br>";
-    html += "<a target='_blank' href='http://datos.madrid.es/sites/v/index.jsp?vgnextoid=930ebf3b03490510VgnVCM1000000b205a0aRCRD&vgnextchannel=20d612b9ace9f310VgnVCM100000171f5a0aRCRD'>Solicitud de datos de alumbrado público de Madrid (03/09/2015)<a><br><br>";
+	html += "<h4>Ayuntamiento de Caceres</h4>";
+    html += "<a target='_blank' href='http://opendata.caceres.es/dataset/farolas-caceres'>Datos de alumbrado público de Cáceres facilitados por el Ayuntamiento de Cáceres en su portal de datos abiertos</a>";
+    html += "<br><br>";
+	html += "<h4>Ayuntamiento de La Palma</h4>";
+    html += "<a target='_blank' href='http://www.opendatacanarias.es/datos/dataset/cabildo-de-la-palma-alumbrado-y-farolas/resource/946ca730-4be4-4c78-a47d-65681ced55b1'>Datos de alumbrado público de La Palma facilitados por el Cabildo de La Palma en su portal de datos abiertos</a><br><br>";
+	html += "<h4>Ayuntamiento de Madrid</h4>";
+    html += "<a target='_blank' href='http://datos.madrid.es/sites/v/index.jsp?vgnextoid=930ebf3b03490510VgnVCM1000000b205a0aRCRD&vgnextchannel=20d612b9ace9f310VgnVCM100000171f5a0aRCRD'>Solicitud de datos de alumbrado público de Madrid (03/09/2015)</a><br><br>";
+    html += "<h4>Mentores</h4>";
+    html += "<spam>Reyes Montiel</span><br><br>";
+    html += "<h4>Colaboradores</h4>";
+    html += "<spam>Óscar Corcho - Catedrático UPM</spam><br><br>";
+    html += "<spam>Alejandro Sánchez de Miguel - Cities@Night</span><br><br>";
     html += "</div>";
     swal({
     	title: "Acerca de Farolapp4All",
@@ -353,7 +362,6 @@ function startWebPage(){
 		geometriesLimitOnZoomHigh=300;
 		geometriesLimitOnZoomLow=50;
 		geometriesChangeOnZoom=20;
-		geometriesClusterZoom=17;
 	}
 	lamppostMap = new google.maps.Map(document.getElementById('lamppostMapContainer'), {
 		//center: {lat: 40.4171, lng: -3.7031},
@@ -452,11 +460,7 @@ function startWebPage(){
 		}else{
 			showLoading();
 			isLoading=true;
-			if(lamppostMap.getZoom > geometriesClusterZoom){
-				getAndDrawLampposts();
-			}else{
-				getAndDrawClusterGeometries();
-			}
+			getAndDrawLampposts();
 			firtsStart=false;
 		}
 		if(jQuery("#lamppostMapContainer").hasClass("animationEnter")){

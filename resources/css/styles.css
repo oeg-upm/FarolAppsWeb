@@ -364,35 +364,21 @@ div.dropClickMenu{
 	}
 }
 
-@media screen and (max-width : 450px){
-	img.Logo{
-    	max-width:100px;
-    	max-height:64px;
-	}
-	img.LogoMin{
-		height:32px;
-		max-height:32px;
-	}
-	div.Logo{
-    	padding: 3px 3px 3px 3px;
-    	display: -ms-flexbox;
-    	display: -webkit-flex;
-    	display: flex;
-    	-webkit-flex-direction: row;
-    	-ms-flex-direction: row;
-    	flex-direction: row;
-    	-ms-align-items: center;
-    	-webkit-align-items: center;
-    	align-items: center;
-	}
+#mainLogo {
+    border-radius: 15px;
+    margin-left: 12px;
+    margin-top: 0px;
+	/*only for white logo -> background-color: #D5D5D5;*/
 }
-@media screen and (min-width : 451px){
-	img.Logo{
-    	height: 64px;
-	}
-	div.Logo{
-    	padding: 3px 3px 3px 3px;
-	}
+
+
+img.Logo{
+    height: 66px;
+    margin-right: 12px;
+    margin-top: 2px;
+}
+div.Logo{
+	padding: 3px 3px 3px 3px;
 }
 
 #specialForm{
