@@ -503,7 +503,7 @@ function startWebPage(){
 			function(data){
 				timeStartPollution = new Date().getTime();
 				drawHeatMapGeometries(data['lampposts']);
-				if(!isHeatMapLoaded){
+				if(!isHeatMapLoaded && jQuery("#pollutionMapContainer").hasClass("animationEnter")){
 					closeModalLoading();
 				}
 				isHeatMapLoaded=true;
