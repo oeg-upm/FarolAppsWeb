@@ -323,7 +323,7 @@ function updateMaps(lat, lng, zoom, heading, pitch, isNew) {
     updateFormMap(lat, lng, zoom, isNew);
 };
 function updateStreetView(lat, lng, heading, pitch) {
-    console.log("updating Street View");
+    //console.log("updating Street View. lat" + lat + "; lng:" + lng + "; lng:" + lat + "; heading:" + heading + "; pitch:" + pitch);
     var place = {lat: lat, lng: lng};
     panorama.setPosition(place);
     if (!heading) {
@@ -367,9 +367,13 @@ function updateInfo(data) {
         if (data.streetViewPov) {
             if (!data.streetViewPov.heading) {
                 heading = 0;
+            } else {
+                heading = parseFloat(data.streetViewPov.heading);
             }
             if (!data.streetViewPov.pitch) {
                 pitch = 0;
+            } else {
+                pitch = parseFloat(data.streetViewPov.pitch);
             }
         } else {
             heading = 0;
@@ -816,7 +820,11 @@ function createDraggedMarker(d, e, notDrag) {
     currentFormMarker = h;
     // Updating panorama view with the new marker
     if (panorama) {
-        updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), 0, 0);
+        if (currentLampInfo.streetViewPov != null && currentLampInfo.streetViewPov.heading != null && currentLampInfo.streetViewPov.pitch != null) {
+            heading = parseFloat(currentLampInfo.streetViewPov.heading);
+            pitch = parseFloat(currentLampInfo.streetViewPov.pitch);
+        }
+        updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), heading, pitch);
     }
     google.maps.event.addListener(currentFormMarker,'dragend',function(event) {
         console.log('Drag end');

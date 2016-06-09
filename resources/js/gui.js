@@ -587,7 +587,7 @@ function getAndDrawLampposts(){
 }
 
 function poolingNewData(start){
-	poolingTimeout = window.setTimeout(poolingNewData,2000);
+	poolingTimeout = window.setTimeout(poolingNewData,10000);
 	if(!start){
 		var lat1=lamppostMap.getBounds().getSouthWest().lat();
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
