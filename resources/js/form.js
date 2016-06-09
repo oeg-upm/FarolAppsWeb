@@ -73,11 +73,11 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
             url: apiHost + '/lampposts/' + id ,
             dataType: 'json',
             success: function (d) {
-                console.log("success");
+                //console.log("success");
                 var nd = normalizeData(d);
                 function autoWait() {
                     if (!panorama || !formMap) {
-                        console.log("waiting for maps")
+                        //console.log("waiting for maps")
                         setTimeout(autoWait, 200);
                     } else {
                         updateInfo(d);
@@ -313,7 +313,7 @@ function openEmptyForm(id, lat, lng, zoom) {
     updateForm(formTemplate);
 };
 function updateMaps(lat, lng, zoom, heading, pitch, isNew) {
-    console.log("updating Maps");
+    //console.log("updating Maps");
     if (currentFormMarker) {
         currentFormMarker.setMap(null);
         google.maps.event.clearListeners(currentFormMarker, 'drag');
@@ -338,7 +338,7 @@ function updateStreetView(lat, lng, heading, pitch) {
     });
 };
 function updateFormMap(lat, lng, zoom, isNew) {
-    console.log("updating Form Map");
+    //console.log("updating Form Map");
     moveMapToLocation(formMap.map, lat, lng);
     formMap.map.setZoom(zoom);
     if (!isNew) {
@@ -554,7 +554,7 @@ function switchRow(e) {
 
 /* StreetView Methods*/
 function loadStreetView(latitude, lng, heading, pitch) {
-    console.log("loading Street View");
+    //console.log("loading Street View");
     initStreetMap(latitude, lng, heading, pitch);
 };
 
@@ -673,7 +673,7 @@ function submitLampInfo() {
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({"latitude": lat, "longitude": lng}),
             success: function (data) {
-                console.log("success");
+                //console.log("success");
                 cbk(null, data);
             },
             error: function (e) {
@@ -690,7 +690,7 @@ function submitLampInfo() {
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(formInfo),
             success: function () {
-                console.log("success");
+                //console.log("success");
                 cbk();
             },
             error: function (e) {
@@ -833,7 +833,7 @@ function createDraggedMarker(d, e, notDrag) {
         updateStreetView(currentFormMarker.getPosition().lat(), currentFormMarker.getPosition().lng(), heading, pitch);
     }
     google.maps.event.addListener(currentFormMarker,'dragend',function(event) {
-        console.log('Drag end');
+        //console.log('Drag end');
         updateStreetView(this.position.lat(), this.position.lng(), 0, 0);
     });
 }
