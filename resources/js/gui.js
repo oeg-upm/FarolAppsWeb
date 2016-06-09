@@ -921,6 +921,7 @@ function addInfoWindow(marker,geo,map){
 	}
   var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
 '<span>Longitud: '+geo['longitude']+'</span><br>'+
+'<span>Id: '+geo['id']+'</span><br>'+
 '<span>Radio de luz: '+radius+'</span><br>'+
 '<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>'+
 '<span>Contaminación lumínica: '+pollution+'</span><br>'+
