@@ -5,6 +5,7 @@
 }
 #formContainer {
     text-align: center;
+    z-index: 10;
 }
 #myList {
     width: 80%;
@@ -209,6 +210,26 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
     -o-transition: max-height 1s;
     transition: max-height 1s;
 }
+#streetViewContainer.open #croshair {
+    height: 64px;
+    left: 50%;
+    top: 50%;
+    width: 64px;
+    margin-top: -32px;
+    margin-left: -32px;
+    pointer-events: none;
+    z-index: 15;
+    background-image: url('../img/crosshair.png');
+    position: absolute;
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: inherit;
+    opacity: 1;
+}
+#croshair {
+    display: none;
+    opacity: 0;
+}
 #formMapContainer.open {
     max-height: 580px;
 }
@@ -233,6 +254,7 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
     height: 32px;
     background-size: contain;
     opacity: 0;
+    cursor: pointer;
 }
 #markerContainer {
     width: 80%;
@@ -262,6 +284,7 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
     top: 6px;
 }
 #mapheader, #streetheader {
+    z-index: 10;
     height: 50px;
     color: #FFF;
     font-size: 26px;

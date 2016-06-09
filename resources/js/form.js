@@ -601,7 +601,10 @@ function initStreetMap(lat, lng, heading, pitch) {
     panorama.setOptions({
         linksControl: false,
         panControl: false,
-        enableCloseButton: false
+        enableCloseButton: false,
+        clickToGo: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true
     })
     panorama.addListener('pov_changed', function() {
         currentStreetViewData = {
@@ -809,17 +812,20 @@ function createDraggedMarker(d, e, notDrag) {
         var a = actual.getPosition().lat();
         var b = actual.getPosition().lng();
         var c = "<div class='infowindow'>" + a.toFixed(6) + ", " + b.toFixed(6) + "<\/div>";
-        iw.setContent(c);
-        iw.open(map, this)
+        //iw.setContent(c);
+        //iw.open(map, this)
     });
     g.event.addListener(h, "dragstart", function() {
-        if (actual == h) iw.close();
+        if (actual == h) //iw.close();
         z_index += 1;
         h.setZIndex(highestOrder())
     })
     currentFormMarker = h;
+    addFormInfoWindow(currentFormMarker, currentLampInfo, formMap);
     // Updating panorama view with the new marker
     if (panorama) {
+        var heading = 0;
+        var pitch = 0;
         if (currentLampInfo.streetViewPov != null && currentLampInfo.streetViewPov.heading != null && currentLampInfo.streetViewPov.pitch != null) {
             heading = parseFloat(currentLampInfo.streetViewPov.heading);
             pitch = parseFloat(currentLampInfo.streetViewPov.pitch);
@@ -831,7 +837,38 @@ function createDraggedMarker(d, e, notDrag) {
         updateStreetView(this.position.lat(), this.position.lng(), 0, 0);
     });
 }
-
+function addFormInfoWindow(marker,geo,map){
+    var tipoDeBombilla = translateLampType['default'];
+    var pollution = translatePollution['default'];
+    var radius = translateRadius['default'];
+    if(geo['lamp'].value!=null){
+        tipoDeBombilla = translateLampType[geo['lamp'].value.toLowerCase()];
+    }
+    if(geo['status'].value!=null){
+        status = translateStatus[geo['status'].value];
+    }
+    var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
+    '<span>Longitud: '+geo['longitude']+'</span><br>'+
+    '<span>Id: '+geo['id']+'</span><br>'+
+    '<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>';
+    var infowindow = new google.maps.InfoWindow({
+        content: contentString
+    });
+    marker.addListener('click', function(ev){
+        if(marker.getCenter){
+            infowindow.setPosition(marker.getCenter());
+        }else if(marker.getPosition){
+            infowindow.setPosition(marker.getPosition());
+        }
+        infowindow.open(map, marker);
+    });
+};
+var translateStatus={
+    "blown": "Fundida",
+    "damaged":"Dañada",
+    "works":"Funcionando",
+    "default":"&lt;Desconocido&gt;"
+};
 function initDrag(e) {
     var j = function(e) {
         var a = {};
@@ -943,10 +980,10 @@ function buildMap(lat, lng) {
         styles: mapStyles,
     };
     map = new g.Map(document.getElementById("formMap"), a);
-    iw = new g.InfoWindow();
-    g.event.addListener(map, "click", function() {
+    //iw = new g.InfoWindow();
+    /*g.event.addListener(map, "click", function() {
         if (iw) iw.close()
-    });
+    });*/
     drag_area = document.getElementById("markers");
     var b = drag_area.getElementsByTagName("div");
     for (var i = 0; i < b.length; i++) {

@@ -353,6 +353,7 @@ function startWebPage(){
 		geometriesLimitOnZoomHigh=300;
 		geometriesLimitOnZoomLow=50;
 		geometriesChangeOnZoom=20;
+		geometriesClusterZoom=17;
 	}
 	lamppostMap = new google.maps.Map(document.getElementById('lamppostMapContainer'), {
 		//center: {lat: 40.4171, lng: -3.7031},
@@ -451,7 +452,11 @@ function startWebPage(){
 		}else{
 			showLoading();
 			isLoading=true;
-			getAndDrawLampposts();
+			if(lamppostMap.getZoom > geometriesClusterZoom){
+				getAndDrawLampposts();
+			}else{
+				getAndDrawClusterGeometries();
+			}
 			firtsStart=false;
 		}
 		if(jQuery("#lamppostMapContainer").hasClass("animationEnter")){
@@ -785,7 +790,7 @@ function drawGeometriesPending(geometries){
 				url: url,
 				scaledSize: new google.maps.Size(32, 32),
 				origin: new google.maps.Point(0, 0),
-				anchor: new google.maps.Point(16, 0)
+				anchor: new google.maps.Point(16, 32)
 		  	};
 		var marker = new google.maps.Marker({
 			position: {lat: geo["latitude"], lng: geo["longitude"]},
