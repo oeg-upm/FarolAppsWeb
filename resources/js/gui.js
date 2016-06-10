@@ -516,6 +516,52 @@ function startWebPage(){
 				}
 				isHeatMapLoaded=true;
 			});
+	var queryParams = window.location.search.substring(1);
+	var mapQueryParams = {}
+	jQuery.each(queryParams.split('&'),function(i,keyAndValue){
+		var splitedKV = keyAndValue.split('=');
+		if(splitedKV.length == 2){
+			mapQueryParams[splitedKV[0]]=splitedKV[1];
+		}
+	});
+	if(mapQueryParams['id']){
+		var geoID = mapQueryParams['id'];
+		lamppostMap.setZoom(geometriesChangeOnZoom+1);
+		ajaxGet(serverURL+'lampposts/'+geoID,{},
+			function(lamppost){
+				if(lamppost['latitude'] && lamppost['longitude']){
+					var lat = lamppost['latitude'];
+					var lng = lamppost['longitude'];
+					lamppostMap.setCenter({'lat':lat,'lng':lng});
+					loadPostForm(geoID,lat,lng,geometriesChangeOnZoom+1,toggleFormContainer);
+					lastDrawID = new Date().getTime();
+					var tries = 15;
+					var interval = window.setInterval(function(){
+						if(lamppostMap && lamppostMap.getBounds 
+								&& lamppostMap.getBounds().getSouthWest 
+								&& lamppostMap.getBounds().getSouthWest().lat
+								&& lamppostMap.getBounds().getSouthWest().lng
+								&& lamppostMap.getBounds().getNorthEast
+								&& lamppostMap.getBounds().getNorthEast().lat
+								&& lamppostMap.getBounds().getNorthEast().lng){
+							window.clearInterval(interval);
+							getAndDrawLampposts(lastDrawID);
+						}else{
+							tries--;
+							if(tries<0){
+								swal('Error','No se puede obtener el Bounds del mapa.','error');
+								window.clearInterval(interval);
+							}
+						}
+					},200);
+				}else{
+					swal("Error","No existe latitud o longitud para el ID: "+geoID,"error");
+				}
+			},
+			function(error){
+				swal("Error","No existe la farola con el ID: "+geoID,"error");
+			});
+	}
 }
 
 function existsTheIdInArray(id,array){
@@ -1074,12 +1120,20 @@ function addInfoWindow(marker,geo,map){
 	if(geo['radius']!=null){
 		radius = translateRadius[geo['radius']];
 	}
-  var contentString = '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
-'<span>Longitud: '+geo['longitude']+'</span><br>'+
-'<span>Radio de luz: '+radius+'</span><br>'+
-'<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>'+
-'<span>Contaminación lumínica: '+pollution+'</span><br>'+
-'<a style="color:blue;cursor:pointer" onclick="loadPostForm(\''+geo['id']+'\','+geo['latitude']+','+geo['longitude']+','+lamppostMap.getZoom()+',toggleFormContainer)">Anotar cambios</a>';
+  var contentString = '<div style="margin-bottom:8px">'+
+  	  '<a href="http://infra3.dia.fi.upm.es/api/lampposts/'+geo['id']+'" target="_blank"><img src="resources/img/popup/formato-JSON.png"></img></a>'+
+  	  '<a href="http://farolas.linkeddata.es/page/resource/'+geo['id']+'" target="_blank" style="margin-left:8px""><img src="resources/img/popup/formato-RDF.png"></img></a>'+
+  	  '</div>'+
+	  '<div style="color:black;"<span>Latitud: '+geo['latitude']+'</span><br>'+
+	  '<span>Longitud: '+geo['longitude']+'</span><br>'+
+	  '<span>Radio de luz: '+radius+'</span><br>'+
+	  '<span>Tipo de bombilla: '+tipoDeBombilla+'</span><br>'+
+	  '<span>Contaminación lumínica: '+pollution+'</span><br>'+
+	  '<a style="color:blue;cursor:pointer" onclick="loadPostForm(\''+geo['id']+'\','+geo['latitude']+','+geo['longitude']+','+lamppostMap.getZoom()+',toggleFormContainer)">Anotar cambios</a>';
+  if(window.location.origin && window.location.pathname){
+	  var url = window.location.origin + window.location.pathname+'?id='+geo['id'];
+  	  contentString += '<br><a style="color:blue;cursor:pointer" onclick="swal(\'Compartir URL\',\''+url+'\',null)">Compartir URL</a>'
+  }
 
   var infowindow = new google.maps.InfoWindow({
     content: contentString
