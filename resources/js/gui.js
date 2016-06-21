@@ -7,7 +7,7 @@ var isLoading=false;
 
 var regions={
 		'Cáceres':{'center':{'lat':39.475121,'lng':-6.371480},'zoom':17},
-		'La Palma':{'center':{'lat':28.124823,'lng':-15.430006},'zoom':13},
+		'La Palma':{'center':{'lat':28.665204781096385,'lng':-17.890128108459514},'zoom':11},
 		'Madrid':{'center':{'lat':40.4171,'lng':-3.7031},'zoom':10}
 }
 
