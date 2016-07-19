@@ -89,7 +89,7 @@ a.list-group-item.active, a.list-group-item.active:focus, a.list-group-item.acti
 }
 
 .list-group-item.active .rowData {
-	max-height: 600px;
+	max-height: 1440px;
 	margin-bottom: 15px;
 }
 
