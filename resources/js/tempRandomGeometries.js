@@ -1,3 +1,8 @@
+
+/*
+* @author: Francisco Siles
+* @Github user: https://github.com/Fransiro/
+*/
 var randomGeometries = {
 	size : 3000,
 	sizeConsensus : 10,
