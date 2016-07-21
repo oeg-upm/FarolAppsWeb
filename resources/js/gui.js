@@ -1,4 +1,7 @@
-
+/*
+* @author: Francisco Siles
+* @Github user: https://github.com/Fransiro/
+*/
 var serverURL = 'http://infra3.dia.fi.upm.es/api/';
 
 var lastWarning = '';
