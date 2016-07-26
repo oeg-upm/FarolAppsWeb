@@ -8,7 +8,6 @@ var currentlamppostID;
 var currentlamppostZoom;
 var currentFormMarker;
 var firstLoad = true;
-var apiHost = "http://infra3.dia.fi.upm.es/api";
 var isNewLamppost;
 var isTempLamppost;
 var panorama;
@@ -70,7 +69,7 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
     function getLampInfo() {
         $.ajax({
             type: "GET",
-            url: apiHost + '/lampposts/' + id ,
+            url: FarolApp_API_URL + 'lampposts/' + id ,
             dataType: 'json',
             success: function (d) {
                 //console.log("success");
@@ -669,7 +668,7 @@ function submitLampInfo() {
         $.ajax
         ({
             type: "POST",
-            url: apiHost + '/lampposts/',
+            url: FarolApp_API_URL + 'lampposts/',
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({"latitude": lat, "longitude": lng}),
             success: function (data) {
@@ -686,7 +685,7 @@ function submitLampInfo() {
         $.ajax
         ({
             type: "POST",
-            url: apiHost + '/lampposts/' + currentlamppostID + '/annotations',
+            url: FarolApp_API_URL + '/lampposts/' + currentlamppostID + '/annotations',
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(formInfo),
             success: function () {
