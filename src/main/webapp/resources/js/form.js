@@ -69,7 +69,7 @@ function loadPostForm(id, lat, lng, theZoom, callback) {
     function getLampInfo() {
         $.ajax({
             type: "GET",
-            url: serverURL + 'lampposts/' + id ,
+            url: FarolApp_API_URL + 'lampposts/' + id ,
             dataType: 'json',
             success: function (d) {
                 //console.log("success");
@@ -668,7 +668,7 @@ function submitLampInfo() {
         $.ajax
         ({
             type: "POST",
-            url: serverURL + 'lampposts/',
+            url: FarolApp_API_URL + 'lampposts/',
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({"latitude": lat, "longitude": lng}),
             success: function (data) {
@@ -685,7 +685,7 @@ function submitLampInfo() {
         $.ajax
         ({
             type: "POST",
-            url: serverURL + '/lampposts/' + currentlamppostID + '/annotations',
+            url: FarolApp_API_URL + '/lampposts/' + currentlamppostID + '/annotations',
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(formInfo),
             success: function () {

@@ -2,7 +2,7 @@
 * @author: Francisco Siles
 * @Github user: https://github.com/Fransiro/
 */
-var serverURL = 'http://infra3.dia.fi.upm.es/api/';
+var FarolApp_API_URL = 'http://infra3.dia.fi.upm.es/api/';
 
 var lastWarning = '';
 
@@ -502,7 +502,7 @@ function startWebPage(){
 		}
 	});
 	//showModalLoading();
-	ajaxGet(serverURL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
+	ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":-90,"long1":-180,"lat2":90,"long2":180},
 			function(data){
 				timeStartPollution = new Date().getTime();
 				drawHeatMapGeometries(data['lampposts']);
@@ -530,7 +530,7 @@ function startWebPage(){
 	if(mapQueryParams['id']){
 		var geoID = mapQueryParams['id'];
 		lamppostMap.setZoom(geometriesChangeOnZoom+1);
-		ajaxGet(serverURL+'lampposts/'+geoID,{},
+		ajaxGet(FarolApp_API_URL+'lampposts/'+geoID,{},
 			function(lamppost){
 				if(lamppost['latitude'] && lamppost['longitude']){
 					var lat = lamppost['latitude'];
@@ -615,7 +615,7 @@ function getAndDrawLampposts(actualDrawID){
 	var long1=lamppostMap.getBounds().getSouthWest().lng();
 	var lat2=lamppostMap.getBounds().getNorthEast().lat();
 	var long2=lamppostMap.getBounds().getNorthEast().lng();
-	ajaxRefresh = ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
+	ajaxRefresh = ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
 			function(data){
 				if(lamppostMap.getZoom()<=geometriesClusterZoom){
 					removeNotVisibleGeometries(true,data);
@@ -650,7 +650,7 @@ function getAndDrawLampposts(actualDrawID){
 	    		ajaxRefresh=null;
 			});
 	if(lamppostMap.getZoom()>=geometriesChangeOnZoom){
-		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"verified":"FALSE"},
+		ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"verified":"FALSE"},
 				function(data){
 					drawGeometriesPending(data['lampposts'],true);
 				},
@@ -675,7 +675,7 @@ function poolingNewData(start){
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
 		var lat2=lamppostMap.getBounds().getNorthEast().lat();
 		var long2=lamppostMap.getBounds().getNorthEast().lng();
-		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s"},
+		ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s"},
 			function(data){
 			changeData(data['lampposts']);
 		},
@@ -699,7 +699,7 @@ function poolingPollution(start){
 	var long1=-180;
 	var lat2=90;
 	var long2=180;
-	ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":time+"s"},
+	ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":time+"s"},
 		function(data){
 			var changesOnLow = false;
 			var changesOnMedium = false;
@@ -751,7 +751,7 @@ function poolingNewPendings(start){
 		var long1=lamppostMap.getBounds().getSouthWest().lng();
 		var lat2=lamppostMap.getBounds().getNorthEast().lat();
 		var long2=lamppostMap.getBounds().getNorthEast().lng();
-		ajaxGet(serverURL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s","verified":"FALSE"},
+		ajaxGet(FarolApp_API_URL+"lampposts",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2,"time":"5s","verified":"FALSE"},
 			function(data){
 			drawGeometriesPending(data['lampposts']);
 		},
@@ -989,7 +989,7 @@ function getAndDrawClusterGeometries(){
 	var long1=lamppostMap.getBounds().getSouthWest().lng();
 	var lat2=lamppostMap.getBounds().getNorthEast().lat();
 	var long2=lamppostMap.getBounds().getNorthEast().lng();
-	ajaxRefreshClustering = ajaxGet(serverURL+"cells",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
+	ajaxRefreshClustering = ajaxGet(FarolApp_API_URL+"cells",{"lat1":lat1,"long1":long1,"lat2":lat2,"long2":long2},
 			function(data){
 				removeNotVisibleGeometries(true,[]);
 				drawClusterGeometries(data['cells']);
