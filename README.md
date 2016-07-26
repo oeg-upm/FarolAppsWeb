@@ -8,8 +8,8 @@
 [![lib jQuery](https://img.shields.io/badge/lib-jQuery-green.svg)](https://jquery.com/)
 [![lib jQueryMobile](https://img.shields.io/badge/lib-jQuery%20Mobile-green.svg)](https://jquerymobile.com/)
 [![lib Modernizr](https://img.shields.io/badge/lib-Modernizr-green.svg)](https://modernizr.com/)
-[![lib SweetAlert](https://img.shields.io/badge/lib-Bootstrap-green.svg)](getbootstrap.com/)
-[![lib FontAwesome](https://img.shields.io/badge/lib-FontAwesome-green.svg)](fontawesome.io/)
+[![lib SweetAlert](https://img.shields.io/badge/lib-Bootstrap-green.svg)](http://getbootstrap.com/)
+[![lib FontAwesome](https://img.shields.io/badge/lib-FontAwesome-green.svg)](http://fontawesome.io/)
 [![Version 0.1](https://img.shields.io/badge/Version-0.1-lightgrey.svg)](#version)
 
 # FarolApp4All Web
