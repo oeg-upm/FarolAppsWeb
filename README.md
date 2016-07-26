@@ -7,6 +7,7 @@
 [![lib jQuery](https://img.shields.io/badge/lib-jQuery-green.svg)](https://jquery.com/)
 [![lib jQueryMobile](https://img.shields.io/badge/lib-jQuery%20Mobile-green.svg)](https://jquerymobile.com/)
 [![lib Modernizr](https://img.shields.io/badge/lib-Modernizr-green.svg)](https://modernizr.com/)
+[![lib sweetAlert](https://img.shields.io/badge/lib-Sweet%20Alert-green.svg)](https://t4t5.github.io/sweetalert/)
 [![lib Bootstrap](https://img.shields.io/badge/lib-Bootstrap-green.svg)](http://getbootstrap.com/)
 [![lib Font Awesome](https://img.shields.io/badge/lib-Font%20Awesome-green.svg)](http://fontawesome.io/)  
 [![Build Maven](https://img.shields.io/badge/build-Maven-lightgrey.svg)](https://maven.apache.org/)
