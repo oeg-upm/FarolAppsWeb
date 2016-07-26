@@ -30,7 +30,7 @@ Edit src/main/webapp/index.html and change the next script:
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=visualization" type="text/javascript"></script>
 ```
 
-***2.2) Change API URL*** <a name="changeAPI_URL"></a> 
+***2.2) Change API URL*** <a name="changeAPI_URL"></a>  
 To change API URL edit the follow file:  
 "src/main/webapp/resources/js/gui.js"  
 Search the next line and change it:  
