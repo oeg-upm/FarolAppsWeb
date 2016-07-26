@@ -38,7 +38,8 @@ Search the next line and change it:
 var FarolApp_API_URL = 'http://infra3.dia.fi.upm.es/api/';
 ```
 Remember add to the end the "/" character.
-
+For further information visit:  
+https://github.com/liveldp/api  
 
 ## 3) Compile <a name="compile"></a>
 
