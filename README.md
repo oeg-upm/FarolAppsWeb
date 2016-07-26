@@ -7,6 +7,7 @@ This project is a GUI for FarolApp4All Api.
 1. [Pre-requisites](#pre-requisites)
 2. [Configuration](#configuration)  
 2.1. [Google Maps API key](#googleMapsApiKey)  
+2.2. [Change API URL](#changeAPI_URL)  
 3. [Compile](#compile)
 4. [Deploy](#deploy)
 5. [Development guide](#developmentGuide)
@@ -28,6 +29,17 @@ Edit src/main/webapp/index.html and change the next script:
 <!-- Google Maps Javascript Api -->
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=visualization" type="text/javascript"></script>
 ```
+
+***2.2) Change API URL*** <a name="changeAPI_URL"></a> 
+To change API URL edit the follow file:  
+"src/main/webapp/resources/js/gui.js"  
+Search the next line and change it:  
+```js
+var FarolApp_API_URL = 'http://infra3.dia.fi.upm.es/api/';
+```
+Remember add to the end the "/" character.
+
+
 ## 3) Compile <a name="compile"></a>
 
 To compile, type in a cmd or terminal (On project folder, you need see the pom.xml):
