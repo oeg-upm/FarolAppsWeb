@@ -37,7 +37,7 @@ Search the next line and change it:
 ```js
 var FarolApp_API_URL = 'http://infra3.dia.fi.upm.es/api/';
 ```
-Remember add to the end the "/" character.
+Remember add to the end the "/" character.  
 For further information visit:  
 https://github.com/liveldp/api  
 
