@@ -1,0 +1,6 @@
+{
+  "name": "Farolappsweb",
+  "tagline": "",
+  "body": "### Welcome to FarolApp4All Web.\r\nThis web application connect with FarolApp4All Api and show the lampposts.\r\nThis project is a GUI for FarolApp4All Api.  \r\nNowadays FarolApp4All only have lampposts of Caceres (Spain) but we obtain more in a future.\r\n\r\nFarolApp4All provides:\r\n* Lamppost map\r\n* Light pollution map\r\n* Update a lamppost\r\n* Registry one lamppost\r\n\r\n### FarolApp4All Web deployments\r\nSome examples are:  \r\n* [FarolApp4All](http://infra3.dia.fi.upm.es)\r\n\r\n### Authors and Contributors\r\n[@Fransiro](https://github.com/Fransiro) and [@CBlanco](https://github.com/cblanco)\r\n\r\n### Support or Contact\r\n[Installation guide](https://github.com/oeg-upm/FarolAppsWeb/blob/master/README.md)  \r\n[Development guide](https://github.com/oeg-upm/FarolAppsWeb/wiki/development-guide)  \r\n\r\nHaving trouble with it? [Contact support](mailto:ocorcho@fi.upm.es) and we’ll help you sort it out.\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
